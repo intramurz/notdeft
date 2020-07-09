@@ -17,7 +17,6 @@
 ;;; Code:
 
 (require 'org)
-(require 'notdeft-autoloads)
 
 (defun notdeft-org-open-deft-link (link)
   "Visit the NotDeft note specified by LINK.
@@ -66,6 +65,7 @@ string, or nil if no non-whitespace description was provided."
 NAME should be a non-directory file name with extension."
   (org-make-link-string (concat "deft:" name) desc))
 
+;;;###autoload
 (defun notdeft-org-store-deft-link ()
   "Store a \"deft:\" link for the current note.
 Like `org-store-link', store the link into `org-stored-links'."

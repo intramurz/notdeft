@@ -19,12 +19,9 @@
 ;; platform.
 ;;
 ;; Suggested use:
-;;  (autoload 'notdeft-xapian-make-program-when-uncurrent "notdeft-xapian-make")
 ;;  (add-hook 'notdeft-load-hook 'notdeft-xapian-make-program-when-uncurrent)
 
 ;;; Code:
-
-(require 'notdeft-autoloads)
 
 (defcustom notdeft-xapian-program-compile-command-format
   "c++ -o %s %s -std=c++11 -Wall `pkg-config --cflags --libs tclap` `xapian-config --cxxflags --libs`"
@@ -56,7 +53,7 @@ If the path is not absolute, it is considered relative to
   "Directory path for notdeft-xapian sources.
 Must specify an absolute path.")
 
-(defvar notdeft-xapian-make-buffer-name " *Install notdeft-xapian"
+(defvar notdeft-xapian-compile-buffer-name "*Compile notdeft-xapian*"
   "Name of the buffer used for compiling notdeft-xapian.")
 
 (defun notdeft-xapian-program-current-p (&optional program)
@@ -76,7 +73,8 @@ source file is newer. PROGRAM defaults to
 		(nth 5 (file-attributes exe-file))
 		(nth 5 (file-attributes cxx-file)))))))))
 
-(defun notdeft-xapian-make-program (&optional program)
+;;;###autoload
+(defun notdeft-xapian-compile-program (&optional program)
   "Compile the notdeft-xapian program.
 Use notdeft-xapian sources in `notdeft-xapian-home', and build
 the PROGRAM, which defaults to `notdeft-xapian-program-install-path'.
@@ -97,8 +95,8 @@ On success, return the path of the built executable."
 	    (format notdeft-xapian-program-compile-command-format
 		    (shell-quote-argument exe-file)
 		    (shell-quote-argument cxx-file))))
-	 (buffer (get-buffer-create notdeft-xapian-make-buffer-name)))
-    (pop-to-buffer notdeft-xapian-make-buffer-name)
+	 (buffer (get-buffer-create notdeft-xapian-compile-buffer-name)))
+    (pop-to-buffer notdeft-xapian-compile-buffer-name)
     (let ((exit-code
 	   (call-process
 	    "sh" nil buffer t "-c" compile-command)))
@@ -112,30 +110,41 @@ On success, return the path of the built executable."
       (message "Compilation of notdeft-xapian succeeded: %S" exe-file)
       exe-file)))
 
+(defun notdeft-xapian-make-program (&optional force)
+  "Compile notdeft-xapian program.
+Only do that if the source directory `notdeft-xapian-home'
+exists, and the target path `notdeft-xapian-program-install-path'
+is non-nil. In that case generate the executable with the target
+path, but only if any existing executable appears to be
+uncurrent, or if the FORCE flag is non-nil. Return the absolute
+target path if it is known, even if the program could not be
+compiled."
+  (when notdeft-xapian-program-install-path
+    (when (and notdeft-xapian-home
+	       (file-directory-p notdeft-xapian-home))
+      (let ((exe-file (expand-file-name
+		       notdeft-xapian-program-install-path
+		       notdeft-xapian-home)))
+	(when (or force (not (notdeft-xapian-program-current-p exe-file)))
+	  (notdeft-xapian-compile-program exe-file))
+	exe-file))))
+
 (eval-when-compile
   (defvar notdeft-xapian-program))
 
+;;;###autoload
 (defun notdeft-xapian-make-program-when-uncurrent ()
   "Compile notdeft-xapian program when it is uncurrent.
-Only do that if the source directory `notdeft-xapian-home'
-exists. In that case generate the executable with the target path
-of `notdeft-xapian-program-install-path'. Fail quietly if
-compilation fails. Set `notdeft-xapian-program' to the program's
-absolute path, or to nil if the program does not exist as an
-executable and could not be compiled."
-  (when notdeft-xapian-program-install-path
-    (let ((exe-file (expand-file-name
-		     notdeft-xapian-program-install-path
-		     notdeft-xapian-home)))
-      (setq notdeft-xapian-program
-	    (progn
-	      (when (and notdeft-xapian-home
-			 (file-directory-p notdeft-xapian-home))
-		(unless (notdeft-xapian-program-current-p exe-file)
-		  (ignore-errors
-		    (notdeft-xapian-make-program exe-file))))
-	      (when (file-executable-p exe-file)
-		exe-file))))))
+Do that as for `notdeft-xapian-make-program', but fail silently
+if compilation fails. Set `notdeft-xapian-program' to the
+program's absolute path, or to nil if the program does not exist
+even after any compilation attempt."
+  (setq notdeft-xapian-program
+	(let ((exe-file
+	       (ignore-errors
+		 (notdeft-xapian-make-program nil))))
+	  (when (file-executable-p exe-file)
+	    exe-file))))
 
 (provide 'notdeft-xapian-make)
 

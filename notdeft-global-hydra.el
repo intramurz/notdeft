@@ -21,13 +21,11 @@
 ;;   (global-set-key [f6] 'notdeft-global-hydra/body)
 ;;
 ;; This feature will define nothing unless the `hydra' feature is
-;; available. If byte-compiled, `hydra' should be available during
-;; compilation.
+;; available.
 
 ;;; Code:
 
 (require 'hydra nil t)
-(require 'notdeft-autoloads)
 
 (eval-when-compile
   (unless (fboundp 'defhydra)

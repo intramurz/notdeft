@@ -15,7 +15,7 @@ NotDeft does not aim for the user interaction simplicity of applications like De
 Open a terminal, and =cd= into your home directory. Download the source code into some directory with
 : git clone https://github.com/hasu/notdeft.git
 
-Then (optionally) byte-compile select Emacs Lisp files with the commands
+Then prepare NotDeft's Emacs Lisp files for use with the commands
 : cd notdeft
 : make
 where =make= is assumed to invoke GNU Make.

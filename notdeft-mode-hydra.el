@@ -24,16 +24,6 @@
 ;;; Code:
 
 (require 'hydra nil t)
-(require 'notdeft-autoloads)
-
-(declare-function notdeft-select-file "notdeft")
-(declare-function notdeft-gc "notdeft")
-(declare-function notdeft-query-edit "notdeft")
-(declare-function notdeft-query-clear "notdeft")
-(declare-function notdeft-reindex "notdeft")
-(declare-function notdeft-filter "notdeft")
-(declare-function notdeft-filter-clear "notdeft")
-(declare-function notdeft-grep-for-filter "notdeft")
 
 (eval-when-compile
   (unless (fboundp 'defhydra)

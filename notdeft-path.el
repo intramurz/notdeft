@@ -23,7 +23,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'notdeft-autoloads)
 
 (defcustom notdeft-path '("~/.deft/")
   "NotDeft directory search path.

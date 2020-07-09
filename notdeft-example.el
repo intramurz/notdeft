@@ -1,12 +1,19 @@
+;; Autoloads for NotDeft commands.
+(require 'notdeft-autoloads)
+
 ;; Full path of "notdeft-xapian" executable.
 (let ((x
-       (let ((default-directory (file-name-directory load-file-name)))
+       (let ((default-directory
+	       (file-name-directory
+		(file-truename (locate-library "notdeft")))))
 	 (file-truename "xapian/notdeft-xapian"))))
   (setq notdeft-xapian-program
 	(and (file-executable-p x) x)))
 
-;; Autoloads for NotDeft commands.
-(require 'notdeft-autoloads)
+;; As an alternative to the above, you can try building and
+;; configuring "notdeft-xapian" on demand, but on most systems this
+;; will not succeed out of the box.
+;(add-hook 'notdeft-load-hook 'notdeft-xapian-make-program-when-uncurrent)
 
 (defun run-local-variables-mode-hooks ()
   "Run hooks for `major-mode' with locals set.
@@ -69,7 +76,7 @@ Add it for all `notdeft-directories'."
 (global-set-key [f6] 'my-notdeft-global-map)
 
 ;; Add Org-specific bindings that are also usable in a NotDeft buffer.
-(eval-after-load 'notdeft
+(add-hook 'notdeft-load-hook
   (lambda ()
     (define-key notdeft-mode-map (kbd "C-c S")
       'notdeft-org-store-deft-link)))
@@ -78,7 +85,7 @@ Add it for all `notdeft-directories'."
 (when (featurep 'hydra)
   ;; Augment `notdeft-mode' bindings with a hydra.
   (autoload 'notdeft-mode-hydra/body "notdeft-mode-hydra" nil t)
-  (eval-after-load 'notdeft
+  (add-hook 'notdeft-load-hook
     (lambda ()
       (define-key notdeft-mode-map (kbd "C-c h")
 	'notdeft-mode-hydra/body)))

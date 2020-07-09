@@ -13,8 +13,6 @@
 
 ;;; Code:
 
-(require 'notdeft-autoloads)
-
 (defvar notdeft-global-map
   (let ((map (make-sparse-keymap)))
     ;; File creation, opening, saving

@@ -1681,6 +1681,7 @@ the result into `notdeft-directory'."
 	(setq notdeft-directory (file-name-as-directory dir))
 	dir)))
 
+;;;###autoload
 (defun notdeft-current-filename (&optional note-only barf)
   "Return the current NotDeft note filename.
 In a `notdeft-mode' buffer, return the currently selected file's
