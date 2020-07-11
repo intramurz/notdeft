@@ -24,7 +24,7 @@ package :
 	-rm -r $(PKGTMPDIR)
 	mkdir -p $(PKGTMPDIR)
 	cp -ai ./ $(PKGTMPDIR)/
-	( cd $(PKGTMPDIR) && git clean -dxffq && rm -rf .git && rm .gitignore Makefile xapian/Makefile )
+	( cd $(PKGTMPDIR) && git clean -dxffq && rm -rf .git && rm .gitignore Makefile )
 	echo '(define-package "notdeft" "'$(PKGVER)'"' > $(PKGMANIFEST)
 	echo '  "Note manager and search engine")' >> $(PKGMANIFEST)
 	( tar --create --file download/$(PKGNAMEVER).tar -C /tmp $(PKGNAMEVER) )

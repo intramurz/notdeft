@@ -77,7 +77,7 @@ NotDeft is not Deft---it aims for wide utility rather than the user experience o
 
 NotDeft can be installed either manually, or as a package.
 
-** Manual Installation
+** Manual Installation from Source
 
 First download the source code with the command
 : git clone https://github.com/hasu/notdeft.git
@@ -100,7 +100,20 @@ With the above setup work done, NotDeft is available for launching from within E
 
 While the above commands acquire, build, and set up NotDeft's Emacs Lisp code, they do not build and configure the C++-based Xapian backend; see [[*Building the Xapian Backend][Building the Xapian Backend]] and [[*Configuring the Xapian Backend][Configuring the Xapian Backend]].
 
-** Installation as a Package
+** Installation as a Package with straight.el
+
+The [[https://github.com/raxod502/straight.el][straight.el]] package manager is able to install NotDeft as a package directly from its source repository. If you have that manager correctly installed, then you can install NotDeft with the command
+#+BEGIN_SRC emacs-lisp
+  (straight-use-package
+   '(notdeft
+     :type git :host github :repo "hasu/notdeft"
+     :files ("*.el" "xapian")))
+#+END_SRC
+which should download NotDeft, generate its autoloads, and handle Emacs Lisp file byte-compilation.
+
+While that command downloads and unpacks the Xapian backend source code, it does not build it or configure it; see [[*Building the Xapian Backend][Building the Xapian Backend]] and [[*Configuring the Xapian Backend][Configuring the Xapian Backend]].
+
+** Installation from a Package File
 
 Installing from Git is recommended where you wish to be sure that you are installing the most recent available version. Still, installation from a downloadable package file is also an option.
 
@@ -130,7 +143,7 @@ While installing the package does unpack the Xapian backend source code, it does
 
 To enable Xapian search queries, you should build the =notdeft-xapian= C++ program in the “xapian” directory. On some systems simply going into that directory and typing
 : make
-should do the trick, provided that the required tools and libraries have already been installed. Other systems may require more work in getting the appropriate tools and libraries installed, and in finding the right C++ compiler incantation for building the program. (On some systems building it may not be feasible at all, and NotDeft's functionality will be more limited.)
+should do the trick, provided that the required tools and libraries have already been installed. Other systems may require more work not only on satisfying the dependencies, but also in finding the right C++ compiler incantation for building the program. (On some systems building it may not be feasible at all, and NotDeft's functionality will be more limited.)
 
 Once a working compiler invocation command has been found, and the necessary C++ libraries have been installed, it is also possible to build the C++ program from within Emacs by using the included =notdeft-xapian-make= Emacs Lisp feature. To use it, set the variable =notdeft-xapian-program-compile-command-format= with the appropriate format string for the compilation command. In that format string the path of the executable comes first, and the path of the source file comes second. For example:
 #+BEGIN_SRC emacs-lisp
