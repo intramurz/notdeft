@@ -14,7 +14,7 @@ exe :
 clean :
 	-rm notdeft-autoloads.el *.elc
 
-PKGVER := 0.7.$(shell date +%Y%m%d).1
+PKGVER := $(shell date +%Y%m%d.%H%M)
 PKGNAMEVER := notdeft-$(PKGVER)
 PKGTMPDIR := /tmp/$(PKGNAMEVER)
 PKGMANIFEST := $(PKGTMPDIR)/notdeft-pkg.el
