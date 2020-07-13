@@ -18,19 +18,10 @@
 ;; To bind the hydra, one can for example:
 ;;   (autoload 'notdeft-global-hydra/body "notdeft-global-hydra" nil t)
 ;;   (global-set-key [f6] 'notdeft-global-hydra/body)
-;;
-;; This feature will define nothing unless the `hydra' feature is
-;; available.
 
 ;;; Code:
 
-(require 'hydra nil t)
-
-(eval-when-compile
-  (unless (fboundp 'defhydra)
-    (defmacro defhydra (&rest _args)
-      "Do not define a hydra."
-      '(progn))))
+(require 'hydra)
 
 (defhydra notdeft-global-hydra (:exit t)
   "NotDeft"

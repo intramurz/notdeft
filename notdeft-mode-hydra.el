@@ -16,13 +16,10 @@
 ;;  (autoload 'notdeft-mode-hydra/body "notdeft-mode-hydra")
 ;;  (eval-after-load "notdeft"
 ;;   '(define-key notdeft-mode-map (kbd "C-c h") 'notdeft-mode-hydra/body))
-;;
-;; This feature will define nothing unless the `hydra' feature is
-;; available.
 
 ;;; Code:
 
-(require 'hydra nil t)
+(require 'hydra)
 
 ;; Mode-private functions without autoloads.
 (declare-function notdeft-filter "notdeft")
@@ -33,12 +30,6 @@
 (declare-function notdeft-query-edit "notdeft")
 (declare-function notdeft-reindex "notdeft")
 (declare-function notdeft-select-file "notdeft")
-
-(eval-when-compile
-  (unless (fboundp 'defhydra)
-    (defmacro defhydra (&rest _args)
-      "Do not define a hydra."
-      '(progn))))
 
 (defhydra notdeft-mode-hydra ()
   "notdeft-mode"
