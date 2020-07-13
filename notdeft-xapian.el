@@ -1,5 +1,4 @@
-;;; notdeft-xapian.el --- Xapian backend for NotDeft
-;; -*- lexical-binding: t; -*-
+;;; notdeft-xapian.el --- Xapian backend for NotDeft  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 by the author.
 ;; All rights reserved.
@@ -18,7 +17,7 @@ disabled, and filtering does not concern search results, but all
 notes in `notdeft-directories'."
   :type '(choice (const :tag "None" nil)
 		 (file :tag "Path"))
-  :safe 'string-or-null-p
+  :safe #'string-or-null-p
   :group 'notdeft)
 
 (defcustom notdeft-xapian-max-results 100
@@ -26,13 +25,13 @@ notes in `notdeft-directories'."
 \(I.e., '--max-count' for `notdeft-xapian-program'.)
 No limit if 0."
   :type 'integer
-  :safe 'integerp
+  :safe #'integerp
   :group 'notdeft)
 
 (defcustom notdeft-xapian-language "en"
   "Stemming language to use in Xapian indexing and searching."
   :type 'string
-  :safe 'stringp
+  :safe #'stringp
   :group 'notdeft)
 
 (defcustom notdeft-xapian-order-by-time t
@@ -40,7 +39,7 @@ No limit if 0."
 Otherwise order by decreasing relevance, unless overridden by
 a query modifier."
   :type 'boolean
-  :safe 'booleanp
+  :safe #'booleanp
   :group 'notdeft)
 
 (defcustom notdeft-xapian-boolean-any-case t
@@ -48,14 +47,14 @@ a query modifier."
 That is, whether the operator syntax also allows
 lowercase characters (e.g., \"and\" and \"or\")."
   :type 'boolean
-  :safe 'booleanp
+  :safe #'booleanp
   :group 'notdeft)
 
 (defcustom notdeft-xapian-pure-not t
   "Whether to allow \"NOT\" in queries.
 Using such queries is costly on performance."
   :type 'boolean
-  :safe 'booleanp
+  :safe #'booleanp
   :group 'notdeft)
 
 (defface notdeft-xapian-query-face
@@ -102,7 +101,7 @@ RECREATE, truncate any existing index files."
 	    (insert file "\n")))))
     (let ((ret
 	   (apply
-	    'call-process-region
+	    #'call-process-region
 	    (point-min) ;; START
 	    (point-max) ;; END
 	    notdeft-xapian-program ;; PROGRAM
@@ -112,7 +111,7 @@ RECREATE, truncate any existing index files."
 	    `("index"
 	      "--chdir" ,(expand-file-name "." "~")
 	      ,@(if recreate '("--recreate") nil)
-	      ,@(apply 'append
+	      ,@(apply #'append
 		       (mapcar
 			(lambda (ext)
 			  `("--extension" ,(concat "." ext)))
@@ -135,7 +134,6 @@ matching files. Sort by relevance, modification time, or
 non-directory filename, all descending, based on the
 `notdeft-xapian-order-by-time' setting and any query modifiers."
   (let ((time-sort (if query notdeft-xapian-order-by-time t))
-	(name-sort nil)
 	(max-results notdeft-xapian-max-results)
 	name-sort)
     (when query
@@ -160,7 +158,7 @@ non-directory filename, all descending, based on the
 		(if notdeft-xapian-pure-not
 		    " --pure-not" "")
 		(if (> max-results 0)
-		    (format " --max-count %d" notdeft-xapian-max-results)
+		    (format " --max-count %d" max-results)
 		  "")
 		(if query
 		    (concat " --query " (shell-quote-argument query))

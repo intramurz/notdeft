@@ -1,5 +1,4 @@
-;;; notdeft-path.el --- NotDeft directory dynamic resolution
-;; -*- lexical-binding: t; -*-
+;;; notdeft-path.el --- NotDeft directory dynamic resolution  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 by the author.
 ;; All rights reserved.
@@ -31,7 +30,7 @@ strings should name directories, which may or may not exist."
   :type '(choice
 	  (repeat (string :tag "Directory"))
 	  (function :tag "Function"))
-  :safe (lambda (lst) (cl-every 'stringp lst))
+  :safe (lambda (lst) (cl-every #'stringp lst))
   :group 'notdeft)
 
 (defvar notdeft-directories-changed-hook nil
@@ -40,8 +39,8 @@ It is called by `notdeft-refresh-directories'.")
 
 (defun notdeft-existing-directories (dirs)
   "Return a list of existing directories DIRS."
-  (mapcar 'file-name-as-directory
-	  (cl-remove-if-not 'file-directory-p dirs)))
+  (mapcar #'file-name-as-directory
+	  (cl-remove-if-not #'file-directory-p dirs)))
 
 (defun notdeft-resolve-directories ()
   "Resolve directories from `notdeft-path'.

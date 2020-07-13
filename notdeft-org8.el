@@ -1,5 +1,4 @@
-;;; notdeft-org8.el --- Org link support for NotDeft notes
-;; -*- lexical-binding: t; -*-
+;;; notdeft-org8.el --- Org link support for NotDeft notes  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019 by the author.
 ;; All rights reserved.

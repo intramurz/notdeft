@@ -1,5 +1,4 @@
-;;; notdeft-global.el --- Global NotDeft keymap
-;; -*- lexical-binding: t; -*-
+;;; notdeft-global.el --- Global NotDeft keymap  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 by the author.
 ;; All rights reserved.
@@ -16,29 +15,29 @@
 (defvar notdeft-global-map
   (let ((map (make-sparse-keymap)))
     ;; File creation, opening, saving
-    (define-key map (kbd "C-n") 'notdeft-new-file)
-    (define-key map (kbd "C-m") 'notdeft-new-file-named)
-    (define-key map (kbd "C-f") 'notdeft-find-file)
-    (define-key map (kbd "C-w") 'notdeft-save-buffer)
-    (define-key map (kbd "b") 'notdeft-switch-to-note-buffer)
-    (define-key map (kbd "B") 'notdeft-switch-to-buffer)
+    (define-key map (kbd "C-n") #'notdeft-new-file)
+    (define-key map (kbd "C-m") #'notdeft-new-file-named)
+    (define-key map (kbd "C-f") #'notdeft-find-file)
+    (define-key map (kbd "C-w") #'notdeft-save-buffer)
+    (define-key map (kbd "b") #'notdeft-switch-to-note-buffer)
+    (define-key map (kbd "B") #'notdeft-switch-to-buffer)
     ;; File management
-    (define-key map (kbd "C-d") 'notdeft-delete-file)
-    (define-key map (kbd "C-r") 'notdeft-rename-file)
-    (define-key map (kbd "x s") 'notdeft-move-into-subdir)
-    (define-key map (kbd "m") 'notdeft-move-file)
-    (define-key map (kbd "x e") 'notdeft-change-file-extension)
-    (define-key map (kbd "C-a") 'notdeft-archive-file)
+    (define-key map (kbd "C-d") #'notdeft-delete-file)
+    (define-key map (kbd "C-r") #'notdeft-rename-file)
+    (define-key map (kbd "x s") #'notdeft-move-into-subdir)
+    (define-key map (kbd "m") #'notdeft-move-file)
+    (define-key map (kbd "x e") #'notdeft-change-file-extension)
+    (define-key map (kbd "C-a") #'notdeft-archive-file)
     ;; Xapian search
-    (define-key map (kbd "f") 'notdeft-lucky-find-file)
-    (define-key map (kbd "o") 'notdeft-open-query)
-    (define-key map (kbd "O") 'notdeft-query-ido-find-file)
+    (define-key map (kbd "f") #'notdeft-lucky-find-file)
+    (define-key map (kbd "o") #'notdeft-open-query)
+    (define-key map (kbd "O") #'notdeft-query-ido-find-file)
     ;; Miscellaneous
-    (define-key map (kbd "e") 'notdeft)
-    (define-key map (kbd "x d") 'notdeft-open-in-deft)
-    (define-key map (kbd "C-j") 'notdeft-chdir)
-    (define-key map (kbd "i") 'notdeft-show-file-directory)
-    (define-key map (kbd "C-g") 'notdeft-refresh)
+    (define-key map (kbd "e") #'notdeft)
+    (define-key map (kbd "x d") #'notdeft-open-in-deft)
+    (define-key map (kbd "C-j") #'notdeft-chdir)
+    (define-key map (kbd "i") #'notdeft-show-file-directory)
+    (define-key map (kbd "C-g") #'notdeft-refresh)
     map)
   "Global keymap for NotDeft.
 

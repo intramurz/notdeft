@@ -1,5 +1,4 @@
-;;; notdeft.el --- quickly browse, filter, and edit plain text notes
-;; -*- lexical-binding: t; -*-
+;;; notdeft.el --- quickly browse, filter, and edit plain text notes  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2011 Jason R. Blevins <jrblevin@sdf.org>
 ;; Copyright (C) 2011-2018 Tero Hasu <tero@hasu.is>
@@ -217,13 +216,13 @@ One of the `notdeft-directories', or nil if none. The value may
 be modified locally for each NotDeft mode buffer."
   :type '(choice (string :tag "Default directory")
 		 (const :tag "None" nil))
-  :safe 'string-or-null-p
+  :safe #'string-or-null-p
   :group 'notdeft)
 
 (defcustom notdeft-extension "org"
   "Default NotDeft file extension."
   :type 'string
-  :safe 'stringp
+  :safe #'stringp
   :group 'notdeft)
 
 (defcustom notdeft-secondary-extensions nil
@@ -253,7 +252,7 @@ Returns nil if no name can be derived from the argument."
 Should begin with '.', '_', or '#' to be excluded from
 indexing for Xapian searches."
   :type 'string
-  :safe 'stringp
+  :safe #'stringp
   :group 'notdeft)
 
 (defcustom notdeft-time-format " %Y-%m-%d %H:%M"
@@ -261,7 +260,7 @@ indexing for Xapian searches."
 Set to nil to hide."
   :type '(choice (string :tag "Time format")
 		 (const :tag "Hide" nil))
-  :safe 'string-or-null-p
+  :safe #'string-or-null-p
   :group 'notdeft)
 
 (defcustom notdeft-file-display-function nil
@@ -271,7 +270,7 @@ width (as for `string-width') as its two arguments. Set to nil to
 have no file information displayed."
   :type '(choice (function :tag "Formatting function")
 		 (const :tag "Hide" nil))
-  :safe 'null
+  :safe #'null
   :group 'notdeft)
 
 (defcustom notdeft-open-query-in-new-buffer nil
@@ -280,7 +279,7 @@ More specifically, when this variable is non-nil, the
 `notdeft-open-query' command shows its matches in a freshly
 created NotDeft buffer."
   :type 'boolean
-  :safe 'booleanp
+  :safe #'booleanp
   :group 'notdeft)
 
 ;; Faces
@@ -626,7 +625,7 @@ that the file should be given its own subdirectory."
   "Return a regexp matching strings with a NotDeft extension."
   (let ((exts (cons notdeft-extension notdeft-secondary-extensions)))
     (concat "\\.\\(?:"
-	    (mapconcat 'regexp-quote exts "\\|")
+	    (mapconcat #'regexp-quote exts "\\|")
 	    "\\)$")))
 
 (defun notdeft-strip-extension (file)
@@ -844,7 +843,7 @@ duplicates."
 	    (when (file-exists-p file)
 	      (setq fn-lst (cons file fn-lst)))))))
     ;; `sort` may modify `name-lst`
-    (let ((name-lst (mapcar 'file-name-nondirectory fn-lst)))
+    (let ((name-lst (mapcar #'file-name-nondirectory fn-lst)))
       (sort name-lst 'string-lessp))))
 
 (defun notdeft-parse-title (contents)
@@ -933,7 +932,7 @@ Do nothing if FILE is not in the cache."
 That is, remove information for files that no longer exist.
 Return a list of the files whose information was removed."
   (let (lst)
-    (maphash (lambda (file v)
+    (maphash (lambda (file _v)
 	       (unless (file-exists-p file)
 		 (setq lst (cons file lst))))
 	     notdeft-hash-mtimes)
@@ -969,7 +968,7 @@ Keep any information for a non-existing file."
 
 (defun notdeft-cache-update (files)
   "Update cached information for FILES."
-  (mapc 'notdeft-cache-file files))
+  (mapc #'notdeft-cache-file files))
 
 (defun notdeft-file-newer-p (file1 file2)
   "Whether FILE1 is more recently modified than FILE2."
@@ -1026,7 +1025,7 @@ Keep any information for a non-existing file."
     (if (not (or notdeft-directories notdeft-sparse-directories))
 	"No NotDeft data directories.\n"
       (if notdeft-current-files
-	  (mapc 'notdeft-file-widget notdeft-current-files) ;; for side effects
+	  (mapc #'notdeft-file-widget notdeft-current-files) ;; for side effects
 	(widget-insert
 	 (if notdeft-filter-string
 	     "No files match the current filter string.\n"
@@ -1066,7 +1065,7 @@ Keep any information for a non-existing file."
 		   :format "%[%v%]"
 		   :tag file
 		   :help-echo "Edit this file"
-		   :notify (lambda (widget &rest ignore)
+		   :notify (lambda (widget &rest _ignore)
 			     (notdeft-find-file (widget-get widget :tag)))
 		   (if title
 		       (truncate-string-to-width title title-width)
@@ -1107,7 +1106,7 @@ Keep any information for a non-existing file."
 Implemented in terms of `maphash'."
   (let (keys)
     (maphash
-     (lambda (k v)
+     (lambda (k _v)
        (notdeft-setq-cons keys k))
      hash)
     keys))
@@ -1145,7 +1144,7 @@ Update the dirlist cache."
   "Return directory and file count for dirlist cache."
   (let ((d 0) (f 0))
     (maphash
-     (lambda (k v)
+     (lambda (_k v)
        (setq d (+ d 1)
 	     f (+ f (length v))))
      notdeft-dirlist-cache)
@@ -1155,7 +1154,7 @@ Update the dirlist cache."
   "Like `append', but copy all of the SEQUENCES.
 That is, do not use the last sequence object as the tail of the
 result."
-  (apply 'append (append sequences (list nil))))
+  (apply #'append (append sequences (list nil))))
 
 (defun notdeft-dirlist-get-all-files ()
   "Return a file list collected from `notdeft-dirlist-cache'.
@@ -1165,7 +1164,7 @@ Only include files for current NotDeft directories."
 		;; nil if no `dir' key
 		(gethash dir notdeft-dirlist-cache))
 	      (notdeft-dcache--roots (notdeft-dcache)))))
-    (apply 'notdeft-append-copy lst)))
+    (apply #'notdeft-append-copy lst)))
 
 (defmacro notdeft-if2 (cnd thn els)
   "Two-armed `if'.
@@ -1511,7 +1510,7 @@ The list of choices is determined by the function
      ((null (cdr buffers))
       (switch-to-buffer (car buffers)))
      (t
-      (let* ((names (mapcar 'buffer-name buffers))
+      (let* ((names (mapcar #'buffer-name buffers))
 	     (name (ido-completing-read "Buffer: " names nil t)))
 	(switch-to-buffer name))))))
 		     
@@ -1556,9 +1555,10 @@ from STR. Return the filename of the created file."
 	 (file (pcase notename
 		((pred stringp)
 		 (notdeft-make-filename notename ext dir))
-		((and `(title ,(and (pred stringp) title))
-		      (let name (notdeft-title-to-notename title))
-		      (guard name))
+		(`(title ,(and (pred stringp) title
+			       (let (and (pred stringp) name)
+				 (notdeft-title-to-notename title))))
+		 (ignore title)
 		 (notdeft-make-filename name ext dir))
 		(`(format ,(and (pred stringp) fmt))
 		 (notdeft-generate-filename ext dir fmt))
@@ -1692,18 +1692,18 @@ message if BARF is non-nil."
   (cond
    ((notdeft-buffer-p)
     (let ((file (widget-get (widget-at) :tag)))
-      (unless file
+      (when (and (not file) barf)
 	(message "No NotDeft note selected"))
       file))
    (note-only
     (let ((file (and (notdeft-note-buffer-p)
 		     (buffer-file-name))))
-      (unless file
+      (when (and (not file) barf)
 	(message "Not in a NotDeft note buffer"))
       file))
    (t
     (let ((file (buffer-file-name)))
-      (unless file
+      (when (and (not file) barf)
 	(message "Not in a file buffer"))
       file))))
 
@@ -2073,7 +2073,7 @@ Modify the variable `notdeft-current-files' to set the result."
   (if (not notdeft-filter-string)
       (setq notdeft-current-files notdeft-all-files)
     (setq notdeft-current-files
-	  (mapcar 'notdeft-filter-match-file notdeft-all-files))
+	  (mapcar #'notdeft-filter-match-file notdeft-all-files))
     (setq notdeft-current-files (delq nil notdeft-current-files))))
 
 (defun notdeft-filter-match-file (file)
@@ -2082,7 +2082,7 @@ Treat `notdeft-filter-string' as a list of whitespace-separated
 strings and require all elements to match."
   (let ((contents (notdeft-file-contents file))
 	(filter-lst
-	 (mapcar 'regexp-quote (split-string notdeft-filter-string)))
+	 (mapcar #'regexp-quote (split-string notdeft-filter-string)))
 	(case-fold-search t))
     (when (cl-every (lambda (filter)
 		      (string-match-p filter contents))
@@ -2101,10 +2101,10 @@ it as a plain string (without query operators). Use
     (when s
       (let ((grep-args
 	     (mapconcat
-	      'shell-quote-argument
+	      #'shell-quote-argument
 	      `(,(or (bound-and-true-p grep-program) "grep")
 		"--color" "-nH" "-F" "-i"
-		,(mapconcat 'identity (split-string s) "\n")
+		,(mapconcat #'identity (split-string s) "\n")
 		,@notdeft-current-files)
 	      " ")))
 	(grep grep-args)))))
@@ -2215,40 +2215,40 @@ arguments, kill all NotDeft mode buffers."
         (map (make-keymap)))
     ;; Make multibyte characters extend the filter string.
     (set-char-table-range (nth 1 map) (cons #x100 (max-char))
-                          'notdeft-filter-increment)
+                          #'notdeft-filter-increment)
     ;; Extend the filter string by default.
     (setq i ?\s)
     (while (< i 256)
-      (define-key map (vector i) 'notdeft-filter-increment)
+      (define-key map (vector i) #'notdeft-filter-increment)
       (setq i (1+ i)))
     ;; Handle return via completion or opening file
-    (define-key map (kbd "RET") 'notdeft-complete)
+    (define-key map (kbd "RET") #'notdeft-complete)
     ;; Filtering
-    (define-key map (kbd "DEL") 'notdeft-filter-decrement)
-    (define-key map (kbd "C-c C-l") 'notdeft-filter)
-    (define-key map (kbd "C-c C-c") 'notdeft-filter-clear)
-    (define-key map (kbd "C-y") 'notdeft-filter-yank)
-    (define-key map (kbd "M-DEL") 'notdeft-filter-decrement-word)
-    (define-key map (kbd "<C-S-backspace>") 'notdeft-filter-clear)
+    (define-key map (kbd "DEL") #'notdeft-filter-decrement)
+    (define-key map (kbd "C-c C-l") #'notdeft-filter)
+    (define-key map (kbd "C-c C-c") #'notdeft-filter-clear)
+    (define-key map (kbd "C-y") #'notdeft-filter-yank)
+    (define-key map (kbd "M-DEL") #'notdeft-filter-decrement-word)
+    (define-key map (kbd "<C-S-backspace>") #'notdeft-filter-clear)
     ;; File management
-    (define-key map (kbd "C-c I") 'notdeft-show-file-info)
-    (define-key map (kbd "C-c p") 'notdeft-show-file-parse)
-    (define-key map (kbd "C-c P") 'notdeft-show-find-file-parse)
+    (define-key map (kbd "C-c I") #'notdeft-show-file-info)
+    (define-key map (kbd "C-c p") #'notdeft-show-file-parse)
+    (define-key map (kbd "C-c P") #'notdeft-show-find-file-parse)
     ;; Miscellaneous
-    (define-key map (kbd "C-c b") 'notdeft-switch-to-note-buffer)
-    (define-key map (kbd "C-c B") 'notdeft-switch-to-buffer)
-    (define-key map (kbd "C-c g") 'notdeft-grep-for-filter)
-    (define-key map (kbd "C-c G") 'notdeft-gc)
-    (define-key map (kbd "C-c R") 'notdeft-reindex)
-    (define-key map (kbd "C-c C-q") 'notdeft-quit)
+    (define-key map (kbd "C-c b") #'notdeft-switch-to-note-buffer)
+    (define-key map (kbd "C-c B") #'notdeft-switch-to-buffer)
+    (define-key map (kbd "C-c g") #'notdeft-grep-for-filter)
+    (define-key map (kbd "C-c G") #'notdeft-gc)
+    (define-key map (kbd "C-c R") #'notdeft-reindex)
+    (define-key map (kbd "C-c C-q") #'notdeft-quit)
     ;; Widgets
-    (define-key map [down-mouse-1] 'widget-button-click)
-    (define-key map [down-mouse-2] 'widget-button-click)
+    (define-key map [down-mouse-1] #'widget-button-click)
+    (define-key map [down-mouse-2] #'widget-button-click)
     ;; Xapian
-    (define-key map (kbd "C-c C-o") 'notdeft-query-edit)
-    (define-key map (kbd "<tab>") 'notdeft-query-edit)
-    (define-key map (kbd "<backtab>") 'notdeft-query-clear)
-    (define-key map (kbd "<S-tab>") 'notdeft-query-clear)
+    (define-key map (kbd "C-c C-o") #'notdeft-query-edit)
+    (define-key map (kbd "<tab>") #'notdeft-query-edit)
+    (define-key map (kbd "<backtab>") #'notdeft-query-clear)
+    (define-key map (kbd "<S-tab>") #'notdeft-query-clear)
     (let ((parent-map (make-sparse-keymap)))
       (define-key parent-map (kbd "C-c") 'notdeft-global-map)
       (set-keymap-parent map parent-map)

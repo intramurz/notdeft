@@ -1,5 +1,4 @@
-;;; notdeft-xapian-make.el --- Xapian backend auto-installer
-;; -*- lexical-binding: t; -*-
+;;; notdeft-xapian-make.el --- Xapian backend auto-installer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 by the authors.
 ;; All rights reserved.
@@ -43,7 +42,7 @@ the arguments."
 If the path is not absolute, it is considered relative to
 `notdeft-xapian-home'."
   :type 'string
-  :safe 'stringp
+  :safe #'stringp
   :group 'notdeft)
 
 (defvar notdeft-xapian-home

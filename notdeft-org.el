@@ -1,5 +1,4 @@
-;;; notdeft-org.el --- some support for Org format NotDeft notes
-;; -*- lexical-binding: t; -*-
+;;; notdeft-org.el --- some support for Org format NotDeft notes  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017-2019 by the author.
 ;; All rights reserved.
@@ -42,7 +41,7 @@ the \"deft:\" prefix."
     (when name-lst
       (ido-completing-read "NotDeft note: " name-lst))))
 
-(defun notdeft-org-complete-deft-link (&optional prefix)
+(defun notdeft-org-complete-deft-link (&optional _prefix)
   "Define completion for Org \"deft:\" links.
 The optional PREFIX argument is ignored."
   (let ((name (notdeft-org-read-deft-link-name)))
@@ -149,7 +148,7 @@ the new note."
 	      (read-string "Title: "
 			   (when region
 			     (notdeft-chomp
-			      (apply 'buffer-substring-no-properties region)))
+			      (apply #'buffer-substring-no-properties region)))
 			   nil nil t)))
 	    (desc (unless (= pfx 4)
 		    (notdeft-org-read-link-description title))))
@@ -164,7 +163,7 @@ the new note."
 		(notdeft-create-file dir notename ext data))))
     (switch-to-buffer buf)
     (when region
-      (apply 'delete-region region))
+      (apply #'delete-region region))
     (insert (notdeft-make-deft-link name desc))))
 
 (defalias 'notdeft-link-new-file

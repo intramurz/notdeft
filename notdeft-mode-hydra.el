@@ -1,5 +1,4 @@
-;;; notdeft-mode-hydra.el --- Hydra for `notdeft-mode'
-;; -*- lexical-binding: t; -*-
+;;; notdeft-mode-hydra.el --- Hydra for `notdeft-mode'  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 by the author.
 ;; All rights reserved.
@@ -25,9 +24,19 @@
 
 (require 'hydra nil t)
 
+;; Mode-private functions without autoloads.
+(declare-function notdeft-filter "notdeft")
+(declare-function notdeft-filter-clear "notdeft")
+(declare-function notdeft-gc "notdeft")
+(declare-function notdeft-grep-for-filter "notdeft")
+(declare-function notdeft-query-clear "notdeft")
+(declare-function notdeft-query-edit "notdeft")
+(declare-function notdeft-reindex "notdeft")
+(declare-function notdeft-select-file "notdeft")
+
 (eval-when-compile
   (unless (fboundp 'defhydra)
-    (defmacro defhydra (&rest args)
+    (defmacro defhydra (&rest _args)
       "Do not define a hydra."
       '(progn))))
 

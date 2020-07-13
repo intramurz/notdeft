@@ -1,5 +1,4 @@
-;;; notdeft-install.el --- NotDeft installer
-;; -*- lexical-binding: t; -*-
+;;; notdeft-install.el --- NotDeft installer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 by the authors.
 ;; All rights reserved.
@@ -16,6 +15,7 @@
 
 ;;; Code:
 
+(require 'autoload)
 (require 'bytecomp)
 
 (declare-function notdeft-xapian-make-program "notdeft-xapian-make")
@@ -33,6 +33,7 @@
   "Generate NotDeft Emacs Lisp \".elc\" files.
 Optionally FORCE byte-compilation even when existing bytecode
 files appear to be up-to-date."
+  (require 'notdeft-autoloads)
   (let ((home (file-name-directory
 	       (locate-library "notdeft-install"))))
     (let ((files (directory-files home nil "^notdeft.*\\.el$")))

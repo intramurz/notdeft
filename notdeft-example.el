@@ -61,12 +61,12 @@ Add it for all `notdeft-directories'."
 (defvar my-notdeft-global-map
   (let ((map (make-sparse-keymap)))
     (define-key map [(a) (d) (l) (v)]
-      'my-notdeft-add-directory-local-variables)
-    (define-key map [(l)] 'notdeft-org-link-existing-note) ;; l for link
-    (define-key map [(n)] 'notdeft-org-link-new-file) ;; n for new
-    (define-key map [(s)] 'org-store-link) ;; s for store
-    (define-key map [(S)] 'notdeft-org-store-deft-link) ;; s for store
-    (define-key map [(*)] 'notdeft-org-open-heading-as-query)
+      #'my-notdeft-add-directory-local-variables)
+    (define-key map [(l)] #'notdeft-org-link-existing-note) ;; l for link
+    (define-key map [(n)] #'notdeft-org-link-new-file) ;; n for new
+    (define-key map [(s)] #'org-store-link) ;; s for store
+    (define-key map [(S)] #'notdeft-org-store-deft-link) ;; s for store
+    (define-key map [(*)] #'notdeft-org-open-heading-as-query)
     (set-keymap-parent map 'notdeft-global-map)
     map)
   "Custom keymap for accessing NotDeft functionality.
@@ -79,7 +79,7 @@ Add it for all `notdeft-directories'."
 (add-hook 'notdeft-load-hook
   (lambda ()
     (define-key notdeft-mode-map (kbd "C-c S")
-      'notdeft-org-store-deft-link)))
+      #'notdeft-org-store-deft-link)))
 
 (require 'hydra nil t)
 (when (featurep 'hydra)
@@ -88,8 +88,8 @@ Add it for all `notdeft-directories'."
   (add-hook 'notdeft-load-hook
     (lambda ()
       (define-key notdeft-mode-map (kbd "C-c h")
-	'notdeft-mode-hydra/body)))
+	#'notdeft-mode-hydra/body)))
 
   ;; Augment the global NotDeft keymap with a hydra also.
   (autoload 'notdeft-global-hydra/body "notdeft-global-hydra" nil t)
-  (define-key my-notdeft-global-map [(h)] 'notdeft-global-hydra/body))
+  (define-key my-notdeft-global-map [(h)] #'notdeft-global-hydra/body))

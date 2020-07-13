@@ -1,5 +1,4 @@
-;;; notdeft-org9.el --- Org link support for NotDeft notes
-;; -*- lexical-binding: t; -*-
+;;; notdeft-org9.el --- Org link support for NotDeft notes  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 by the author.
 ;; All rights reserved.

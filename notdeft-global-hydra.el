@@ -1,5 +1,4 @@
-;;; notdeft-global-hydra.el --- Hydra for NotDeft
-;; -*- lexical-binding: t; -*-
+;;; notdeft-global-hydra.el --- Hydra for NotDeft  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018 by the author.
 ;; All rights reserved.
@@ -29,7 +28,7 @@
 
 (eval-when-compile
   (unless (fboundp 'defhydra)
-    (defmacro defhydra (&rest args)
+    (defmacro defhydra (&rest _args)
       "Do not define a hydra."
       '(progn))))
 
