@@ -87,8 +87,8 @@
 ;; using `C-p` and `C-n` and press `RET` on the file you want to open.
 
 ;; Press `C-c C-c` to clear the filter string and display all files
-;; and `C-c C-g` to refresh the file browser using the current filter
-;; string.
+;; and `C-c C-x g` to refresh the file browser using the current
+;; filter string.
 
 ;; Static filtering is also possible by pressing `C-c C-l`.  This is
 ;; sometimes useful on its own, and it may be preferable in some
@@ -2190,6 +2190,7 @@ title. Otherwise, quickly create a new file."
    (t
     (notdeft-new-file 1))))
 
+;;;###autoload
 (defun notdeft-gc ()
   "Garbage collect to remove uncurrent NotDeft state.
 More specifically, delete obsolete cached file and directory
@@ -2231,15 +2232,11 @@ arguments, kill all NotDeft mode buffers."
     (define-key map (kbd "M-DEL") #'notdeft-filter-decrement-word)
     (define-key map (kbd "<C-S-backspace>") #'notdeft-filter-clear)
     ;; File management
-    (define-key map (kbd "C-c I") #'notdeft-show-file-info)
-    (define-key map (kbd "C-c p") #'notdeft-show-file-parse)
-    (define-key map (kbd "C-c P") #'notdeft-show-find-file-parse)
+    (define-key map (kbd "C-c C-x i") #'notdeft-show-file-info)
+    (define-key map (kbd "C-c C-x p") #'notdeft-show-file-parse)
+    (define-key map (kbd "C-c C-x P") #'notdeft-show-find-file-parse)
     ;; Miscellaneous
-    (define-key map (kbd "C-c b") #'notdeft-switch-to-note-buffer)
-    (define-key map (kbd "C-c B") #'notdeft-switch-to-buffer)
-    (define-key map (kbd "C-c g") #'notdeft-grep-for-filter)
-    (define-key map (kbd "C-c G") #'notdeft-gc)
-    (define-key map (kbd "C-c R") #'notdeft-reindex)
+    (define-key map (kbd "C-c C-x f") #'notdeft-grep-for-filter)
     (define-key map (kbd "C-c C-q") #'notdeft-quit)
     ;; Widgets
     (define-key map [down-mouse-1] #'widget-button-click)
@@ -2257,6 +2254,7 @@ arguments, kill all NotDeft mode buffers."
 
 \\{notdeft-mode-map}")
 
+;;;###autoload
 (defun notdeft-reindex ()
   "Recreate all indexes for `notdeft-directories'.
 A `notdeft-refresh' is normally sufficient, but this command
@@ -2287,8 +2285,9 @@ optionally for ALL-BUFFERS."
 (defun notdeft-refresh (&optional reset)
   "Refresh or reset NotDeft state.
 Refresh NotDeft state so that outside filesystem changes get
-noticed. With a non-nil prefix argument RESET, also reset state
-to clear caches and queries and such. With two prefix arguments,
+noticed. Also reset state to clear caches and queries and such if
+RESET is non-nil, or if the command prefix \\[universal-argument]
+is given interactively. With two \\[universal-argument] prefixes,
 clear queries and filters for all NotDeft mode buffers. Invoke
 this command manually if NotDeft files change outside of NotDeft
 mode and NotDeft note minor mode \(as toggled by the command

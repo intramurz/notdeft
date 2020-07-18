@@ -20,15 +20,14 @@
 ;;; Code:
 
 (require 'hydra)
+(require 'notdeft-global-hydra)
 
 ;; Mode-private functions without autoloads.
 (declare-function notdeft-filter "notdeft")
 (declare-function notdeft-filter-clear "notdeft")
-(declare-function notdeft-gc "notdeft")
 (declare-function notdeft-grep-for-filter "notdeft")
 (declare-function notdeft-query-clear "notdeft")
 (declare-function notdeft-query-edit "notdeft")
-(declare-function notdeft-reindex "notdeft")
 (declare-function notdeft-select-file "notdeft")
 
 (defhydra notdeft-mode-hydra ()
@@ -44,26 +43,26 @@
   ("e" notdeft-change-file-extension "change ext")
   ("a" notdeft-archive-file "archive")
   ("i" notdeft-show-file-directory "show dir")
-  ("t" notdeft-open-in-deft "Deft" :exit t)
-  ;; NotDeft state
+  ("x d" notdeft-open-in-deft "Deft" :exit t)
+  ;; state
   ("j" notdeft-chdir "chdir")
-  ("C-g" notdeft-refresh "refresh")
-  ("G" notdeft-gc "GC")
-  ("R" notdeft-reindex "re-index")
+  ("g" notdeft-refresh "refresh")
   ;; filtering
   ("l" notdeft-filter "filter" :exit t)
   ("c" notdeft-filter-clear "clear filter")
-  ("g" notdeft-grep-for-filter "grep for filter" :exit t)
+  ("f" notdeft-grep-for-filter "grep for filter" :exit t)
   ;; querying
-  ("o" notdeft-query-edit "query")
+  ("o" notdeft-query-edit "query" :exit t)
   ("O" notdeft-query-clear "clear query")
   ;; movement
   ("<up>" previous-line)
   ("<down>" next-line)
-  ;; other
   ("b" notdeft-switch-to-note-buffer "switch to note" :exit t)
-  ("x" quit-window "quit" :exit t)
-  ("q" nil "cancel" :exit t))
+  ("B" notdeft-switch-to-buffer "switch to buffer" :exit t)
+  ;; other
+  ("z" notdeft-global-hydra/body "more" :exit t)
+  ("q" quit-window "quit" :exit t)
+  ("C-g" nil "cancel" :exit t))
 
 (provide 'notdeft-mode-hydra)
 

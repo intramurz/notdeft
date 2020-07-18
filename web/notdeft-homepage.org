@@ -761,8 +761,8 @@ Try doing the following in a =*NotDeft*= buffer:
 1. Press =TAB= (or =M-x notdeft-query-edit=) to be prompted for a Xapian query.
 2. If nothing happens when you press =TAB=, then you have probably not configured a value for =notdeft-xapian-program=. Assign a value to that variable.
 3. Having pressed =TAB=, enter a query string at the prompt, one that should match some notes, and press =RET=.
-4. If that reports "Found no notes", or an unexpected set of notes, then your search index may not be up-to-date, perhaps due to filesystem changes outside of NotDeft. Invoke the command =M-x notdeft-refresh= (i.e., =C-c C-g=) to refresh the search index.
-5. If you suspect that your search index may be corrupt or incompatible in some way, you may invoke the command =M-x notdeft-reindex= (i.e., =C-c R=) to fully rebuild the search index, instead of just refreshing it.
+4. If that reports "Found no notes", or an unexpected set of notes, then your search index may not be up-to-date, perhaps due to filesystem changes outside of NotDeft. Invoke the command =M-x notdeft-refresh= (i.e., =C-c C-x g=) to refresh the search index.
+5. If you suspect that your search index may be corrupt or incompatible in some way, you may invoke the command =M-x notdeft-reindex= (i.e., =C-c C-x r=) to fully rebuild the search index, instead of just refreshing it.
 6. If you see unexpected behavior after setting a search query, ensure that the =notdeft-xapian-program= variable names the complete and fully expanded path of a working executable. It may be worth trying to run the program directly, and seeing what it says. For example:    
    : /path/to/notdeft-xapian search -q 'Emacs OR Vi' ~/.deft
 7. If your search query includes prefix terms such as “title:Emacs”, and you do not get all the expected matches, then make sure that any lines before any =#+TITLE= (or, =#+KEYWORDS=, etc.) are either whitespace only or begin with “#”. While the Org markup language allows in-buffer settings to appear anywhere in a file, NotDeft only scans the beginning of each file for such settings.

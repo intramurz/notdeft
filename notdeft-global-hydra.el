@@ -23,32 +23,41 @@
 
 (require 'hydra)
 
+;; Functions without autoloads.
+(declare-function notdeft-buffer-p "notdeft")
+
 (defhydra notdeft-global-hydra (:exit t)
   "NotDeft"
   ;; file management
   ("n" notdeft-new-file "create")
-  ("N" notdeft-new-file-named "create named")
-  ("f" notdeft-find-file "open")
-  ("w" notdeft-save-buffer "save" :exit nil)
+  ("m" notdeft-new-file-named "create named")
+  ("C-f" notdeft-find-file "open")
+  ("C-w" notdeft-save-buffer "save" :exit nil)
   ("d" notdeft-delete-file "delete")
   ("r" notdeft-rename-file "rename")
-  ("m" notdeft-move-file "move")
+  ("v" notdeft-move-file "move")
   ("s" notdeft-move-into-subdir "move into subdir")
   ("e" notdeft-change-file-extension "change ext")
   ("a" notdeft-archive-file "archive")
   ("i" notdeft-show-file-directory "show dir" :exit nil)
-  ("t" notdeft-open-in-deft "Deft")
-  ;; NotDeft state
+  ("x d" notdeft-open-in-deft "Deft")
+  ;; state
   ("j" notdeft-chdir "chdir" :exit nil)
   ("g" notdeft-refresh "refresh" :exit nil)
+  ("x c" notdeft-gc "GC" :exit nil)
+  ("x r" notdeft-reindex "reindex" :exit nil)
   ;; search
   ("o" notdeft-open-query "search")
-  ("l" notdeft-lucky-find-file "lucky search")
-  ;; other
-  ("v" notdeft "NotDeft")
+  ("f" notdeft-query-ido-find-file "search/open")
+  ("x o" notdeft-lucky-find-file "lucky search")
+  ;; movement
   ("b" notdeft-switch-to-note-buffer "switch to note")
   ("B" notdeft-switch-to-buffer "switch to buffer")
-  ("q" nil "cancel"))
+  ;; other
+  ("z" (when (notdeft-buffer-p)
+	 (notdeft-mode-hydra/body)) "more")
+  ("." notdeft "NotDeft")
+  ("C-g" nil "cancel"))
 
 (provide 'notdeft-global-hydra)
 
