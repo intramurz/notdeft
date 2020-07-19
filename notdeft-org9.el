@@ -12,17 +12,14 @@
 
 ;;; Code:
 
-;; avoid warning if compiling with an earlier Org version
-(declare-function org-link-set-parameters "org" t t)
-  
 (org-link-set-parameters
  "deft"
- :follow 'notdeft-org-open-deft-link
- :complete 'notdeft-org-complete-deft-link)
+ :follow #'notdeft-org-open-deft-link
+ :complete #'notdeft-org-complete-deft-link)
 
 (org-link-set-parameters
  "notdeft"
- :follow 'notdeft-org-open-notdeft-link
- :store 'notdeft-org-store-notdeft-link)
+ :follow #'notdeft-org-open-notdeft-link
+ :store #'notdeft-org-store-notdeft-link)
 
 ;;; notdeft-org9.el ends here

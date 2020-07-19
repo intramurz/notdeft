@@ -11,14 +11,11 @@
 
 ;;; Code:
 
-;; avoid warning if compiling with a later Org version
-(declare-function org-add-link-type "org" t t)
-
 (declare-function notdeft-org-complete-deft-link "notdeft-org")
 
 (org-add-link-type
  "deft"
- 'notdeft-org-open-deft-link) ;; follow
+ #'notdeft-org-open-deft-link) ;; follow
 
 (defun org-deft-complete-link ()
   "Complete a \"deft:\" link.
@@ -29,6 +26,6 @@ for the link-type-specific completion function."
 
 (org-add-link-type
  "notdeft"
- 'notdeft-org-open-notdeft-link) ;; follow
+ #'notdeft-org-open-notdeft-link) ;; follow
 
 ;;; notdeft-org8.el ends here

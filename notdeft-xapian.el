@@ -144,8 +144,7 @@ non-directory filename, all descending, based on the
 	    ("time" (setq time-sort t))
 	    ("rank" (setq time-sort nil))
 	    ("all" (setq max-results 0))
-	    ("file" (setq name-sort t))
-	    ))))
+	    ("file" (setq name-sort t))))))
     (let* ((query (notdeft-chomp-nullify query))
 	   (s (shell-command-to-string
 	       (concat
