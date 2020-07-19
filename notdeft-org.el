@@ -6,9 +6,8 @@
 ;; See "notdeft.el" for licensing information.
 
 ;;; Commentary:
-;; Some NotDeft-specific support for `org-mode'.  Includes support for
-;; managing "deft:" and "notdeft:" links.  For Org mode version 8 and
-;; higher.
+;; Some NotDeft-specific support for `org-mode'. For Org mode version
+;; 8 and higher.
 
 ;; You probably want to load this `notdeft-org' feature when you load
 ;; Org itself.
@@ -208,10 +207,6 @@ interpreted in the `notdeft-open-query' sense."
 		   (title (replace-regexp-in-string "\"" "" title))
 		   (title (concat "\"" title "\"")))
 	      (notdeft-open-query title rank negate))))))))
-
-(let ((ver (when (string-match "^[0-9]+" org-version)
-	     (string-to-number (match-string 0 org-version)))))
-  (load (if (and ver (< ver 9)) "notdeft-org8" "notdeft-org9")))
 
 (provide 'notdeft-org)
 

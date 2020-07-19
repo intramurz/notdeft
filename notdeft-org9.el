@@ -6,11 +6,13 @@
 ;; See "notdeft.el" for licensing information.
 
 ;;; Commentary:
-;; Some NotDeft-specific support for `org-mode' version 9.  The
-;; `org-link-set-parameters' API is available since Org version 9, in
-;; the `org' feature.
+;; Support for "deft:" and "notdeft:" links for `org-mode' version 9.
+;; The `org-link-set-parameters' API is available since Org version 9,
+;; in the `org' feature.
 
 ;;; Code:
+
+(require 'notdeft-org)
 
 (org-link-set-parameters
  "deft"
@@ -21,5 +23,7 @@
  "notdeft"
  :follow #'notdeft-org-open-notdeft-link
  :store #'notdeft-org-store-notdeft-link)
+
+(provide 'notdeft-org9)
 
 ;;; notdeft-org9.el ends here

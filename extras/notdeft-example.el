@@ -52,7 +52,15 @@ Add it for all `notdeft-directories'."
       (add-dir-local-variable nil 'notdeft-note-mode-auto-enable t))))
 
 ;; Extras for Org mode.
-(eval-after-load 'org (lambda () (require 'notdeft-org)))
+(eval-after-load 'org
+  (lambda ()
+    (require 'notdeft-org)
+    ;; Org "deft:" and "notdeft:" link support.
+    (let ((ver (ignore-errors
+		 (car (version-to-list org-version)))))
+      (require (if (and ver (< ver 9))
+		   'notdeft-org8
+		 'notdeft-org9)))))
 
 ;; Add global bindings for NotDeft. To do that, bind a custom keymap
 ;; that inherits from NotDeft's, one that we can use to override and

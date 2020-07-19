@@ -6,10 +6,12 @@
 ;; See "notdeft.el" for licensing information.
 
 ;;; Commentary:
-;; Some NotDeft-specific support for `org-mode' version 8.  The
-;; `org-add-link-type' API is obsolete since Org version 9.
+;; Support for "deft:" and "notdeft:" links for `org-mode' version 8.
+;; The `org-add-link-type' API is obsolete since Org version 9.
 
 ;;; Code:
+
+(require 'notdeft-org)
 
 (declare-function notdeft-org-complete-deft-link "notdeft-org")
 
@@ -27,5 +29,7 @@ for the link-type-specific completion function."
 (org-add-link-type
  "notdeft"
  #'notdeft-org-open-notdeft-link) ;; follow
+
+(provide 'notdeft-org8)
 
 ;;; notdeft-org8.el ends here
