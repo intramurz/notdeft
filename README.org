@@ -28,9 +28,9 @@ If the =make= command fails, then you will need to ensure that you have the requ
 To make NotDeft loadable in Emacs, add the following code to your Emacs startup file (e.g., “~/.emacs”):
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/notdeft")
-  (load "notdeft-example")
+  (load "extras/notdeft-example")
 #+END_SRC
-The [[./notdeft-example.el][notdeft-example.el]] file is a sample configuration for NotDeft, which sets up NotDeft for use with Org mode based note files, also enabling some optional components of NotDeft, and setting up some keybindings. It may be a useful starting point for a personal configuration.
+The [[./extras/notdeft-example.el][notdeft-example.el]] file is a sample configuration for NotDeft, which sets up NotDeft for use with Org mode based note files, also enabling some optional components of NotDeft, and setting up some keybindings. It may be a useful starting point for a personal configuration.
 
 Create a “~/.deft” directory, and copy some “.org” files there.
 

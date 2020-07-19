@@ -38,8 +38,7 @@ files appear to be up-to-date."
 	       (locate-library "notdeft-install"))))
     (let ((files (directory-files home nil "^notdeft.*\\.el$")))
       (dolist (file files)
-	(unless (member file '("notdeft-autoloads.el"
-			       "notdeft-example.el"))
+	(unless (member file '("notdeft-autoloads.el"))
 	  (let ((file (concat home file)))
 	    (byte-recompile-file file force 0)))))))
 
