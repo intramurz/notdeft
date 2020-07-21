@@ -46,7 +46,8 @@ If the =make= command fails, then you will need to ensure that you have the requ
 To make NotDeft loadable in Emacs, add the following code to your Emacs startup file (e.g., “~/.emacs”):
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/notdeft")
-  (load "extras/notdeft-example")
+  (add-to-list 'load-path "~/notdeft/extras")
+  (load "notdeft-example")
 #+END_SRC
 The “notdeft-example.el” file is a sample configuration for NotDeft, which sets up NotDeft for use with Org mode based note files, also enabling some optional components of NotDeft, and setting up some keybindings. It may be a useful starting point for a personal configuration.
 
@@ -581,7 +582,7 @@ Filename extensions can be capitalized to avoid any stemming. For example, to fi
 
 * Command Popup Buffers
 
-If it seems hard to remember the various NotDeft commands, one may wish to have a command selection dialog, similar to the one in [[https://magit.vc/][Magit]]. For implementing such “helpful key bindings,” one can use [[https://magit.vc/manual/magit-popup.html][Magit-Popup]] or [[https://github.com/abo-abo/hydra][Hydra]], for instance. As an example, NotDeft includes a predefined hydra for its mode-agnostic commands, provided by the =notdeft-global-hydra= feature. To bind =[f6]= to the hydra (instead of the =notdeft-global-map= keymap directly), one can use the configuration code 
+If it seems hard to remember the various NotDeft commands, one may wish to have a command selection dialog, similar to the one in [[https://magit.vc/][Magit]]. For implementing such “helpful key bindings,” one can use [[https://magit.vc/manual/magit-popup.html][Magit-Popup]] or [[https://github.com/abo-abo/hydra][Hydra]], for instance. As an example, the “extras” directory of NotDeft's source repository contains a predefined hydra for NotDeft's mode-agnostic commands, provided by the =notdeft-global-hydra= feature. To bind =[f6]= to the hydra (instead of the =notdeft-global-map= keymap directly), one can use the configuration code 
 #+BEGIN_SRC emacs-lisp
   (autoload 'notdeft-global-hydra/body "notdeft-global-hydra" nil t)
   (global-set-key [f6] 'notdeft-global-hydra/body)

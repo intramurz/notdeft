@@ -31,7 +31,7 @@
 ;;         Tero Hasu <tero@hasu.is>
 ;; URL: https://tero.hasu.is/notdeft/
 ;; Keywords: files text notes search
-;; Package-Requires: ((emacs "24.3") (hydra "0.14"))
+;; Package-Requires: ((emacs "24.3"))
 
 ;; This file is not part of GNU Emacs.
 

@@ -33,14 +33,23 @@
   "Generate NotDeft Emacs Lisp \".elc\" files.
 Optionally FORCE byte-compilation even when existing bytecode
 files appear to be up-to-date."
-  (require 'notdeft-autoloads)
-  (let ((home (file-name-directory
-	       (locate-library "notdeft-install"))))
-    (let ((files (directory-files home nil "^notdeft.*\\.el$")))
-      (dolist (file files)
-	(unless (member file '("notdeft-autoloads.el"))
-	  (let ((file (concat home file)))
-	    (byte-recompile-file file force 0)))))))
+  (let ((dir (file-name-directory
+	      (locate-library "notdeft-install"))))
+    (notdeft-install--byte-compile dir "./" t force)
+    (notdeft-install--byte-compile dir "extras/" nil force)))
+
+(defun notdeft-install--byte-compile (dir subdir must force)
+  "Byte-compile NotDeft sources in DIR SUBDIR.
+If so indicated, the directory MUST exist. Optionally FORCE the
+compilation."
+  (let ((home (expand-file-name subdir dir)))
+    (when (or must (file-exists-p home))
+      (let ((files (directory-files home nil "^notdeft.*\\.el$")))
+	(dolist (file files)
+	  (unless (member file '("notdeft-autoloads.el"
+				 "notdeft-example.el"))
+	    (let ((file (concat home file)))
+	      (byte-recompile-file file force 0))))))))
 
 ;;;###autoload
 (defun notdeft-install (&optional force)
@@ -49,6 +58,7 @@ Optionally FORCE byte-compilation even when existing bytecode
 files appear to be up-to-date."
   (interactive "P")
   (notdeft-install-autoloads)
+  (require 'notdeft-autoloads)
   (notdeft-install-bytecode force)
   (require 'notdeft-xapian-make)
   (notdeft-xapian-make-program force))
