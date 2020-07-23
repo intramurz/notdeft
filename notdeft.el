@@ -4,36 +4,40 @@
 ;; Copyright (C) 2011-2020 Tero Hasu <tero@hasu.is>
 ;; All rights reserved.
 
-;; Redistribution and use in source and binary forms, with or without
-;; modification, are permitted provided that the following conditions are met:
-;; 1. Redistributions of source code must retain the above copyright
-;;    notice, this list of conditions and the following disclaimer.
-;; 2. Redistributions in binary form must reproduce the above copyright
-;;    notice, this list of conditions and the following disclaimer in the
-;;    documentation  and/or other materials provided with the distribution.
-;; 3. Neither the names of the copyright holders nor the names of any
-;;    contributors may be used to endorse or promote products derived from
-;;    this software without specific prior written permission.
-
-;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-;; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-;; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-;; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-;; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-;; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-;; POSSIBILITY OF SUCH DAMAGE.
-
-;; Author: Jason R. Blevins <jrblevin@sdf.org>
-;;         Tero Hasu <tero@hasu.is>
-;; URL: https://tero.hasu.is/notdeft/
+;; Author: Tero Hasu <tero@hasu.is>
+;;	Jason R. Blevins <jrblevin@sdf.org>
+;; Maintainer: Tero Hasu <tero@hasu.is>
+;; Homepage: https://tero.hasu.is/notdeft/
 ;; Keywords: files text notes search
 ;; Package-Requires: ((emacs "24.3"))
 
 ;; This file is not part of GNU Emacs.
+
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions
+;; are met:
+;; 1. Redistributions of source code must retain the above copyright
+;;    notice, this list of conditions and the following disclaimer.
+;; 2. Redistributions in binary form must reproduce the above
+;;    copyright notice, this list of conditions and the following
+;;    disclaimer in the documentation and/or other materials provided
+;;    with the distribution.
+;; 3. Neither the names of the copyright holders nor the names of any
+;;    contributors may be used to endorse or promote products derived
+;;    from this software without specific prior written permission.
+
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+;; "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+;; LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+;; FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+;; COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+;; INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+;; (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+;; SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+;; HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+;; STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+;; OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ;;; Commentary:
 
@@ -50,12 +54,12 @@
 
 ;; The NotDeft buffer is simply a local search engine result browser
 ;; which lists the titles of all text files matching a search query
-;; (entered by first pressing TAB) followed by short summaries and
-;; last modified times. The title is taken to be the first line of the
-;; file (or as specified by an Org "TITLE" file property) and the
-;; summary is extracted from the text that follows. By default, files
-;; are sorted in terms of the last modified date, from newest to
-;; oldest.
+;; (entered by first pressing TAB or `C-c C-o`), followed by short
+;; summaries and last modified times. The title is taken to be the
+;; first line of the file (or as specified by an Org "TITLE" file
+;; property) and the summary is extracted from the text that follows.
+;; By default, files are sorted in terms of the last modified date,
+;; from newest to oldest.
 
 ;; All NotDeft files or notes are simple plain text files (e.g., Org
 ;; markup files). As an example, the following directory structure
@@ -71,17 +75,17 @@
 ;;
 ;;     An Emacs mode for slicing and dicing plain text files.
 
-;; Filtering
+;; Searching and Filtering
 
 ;; NotDeft's primary operations are searching and filtering. The list
-;; of files can be limited or filtered using a search string, which
-;; will match both the title and the body text. To initiate a filter,
-;; simply start typing. Filtering happens on the fly. As you type, the
-;; file browser is updated to include only files that match the
-;; current string.
+;; of files matching a search query can be further narrowed down using
+;; a filter string, which will match both the title and the body text.
+;; To initiate a filter, simply start typing. Filtering happens on the
+;; fly. As you type, the file browser is updated to include only files
+;; that match the current string.
 
 ;; To open the first matching file, simply press `RET`.  If no files
-;; match your search string, pressing `RET` will create a new file
+;; match your filter string, pressing `RET` will create a new file
 ;; using the string as the title.  This is a very fast way to start
 ;; writing new notes.  The filename will be generated automatically.
 
@@ -97,29 +101,61 @@
 ;; situations, such as over slow connections or on older systems,
 ;; where interactive filtering performance is poor.
 
-;; Common file operations can also be carried out from within NotDeft.
-;; Files can be renamed using `C-c C-r` or deleted using `C-c C-d`.
-;; New files can also be created using `C-c C-n` for quick creation or
-;; `C-c C-m` for a filename prompt. You can leave NotDeft at any time
-;; with `C-c C-q`, which buries the buffer, or kills it with a prefix
-;; argument `C-u`.
+;; Common file operations can also be carried out from within a
+;; NotDeft buffer. Files can be renamed using `C-c C-r` or deleted
+;; using `C-c C-d`. New files can also be created using `C-c C-n` for
+;; quick creation or `C-c C-m` for a filename prompt. You can leave a
+;; `notdeft-mode' buffer at any time with `C-c C-q`, which buries the
+;; buffer, or kills it with a prefix argument `C-u`.
 
 ;; Archiving unused files can be carried out by pressing `C-c C-a`.
 ;; Files will be moved to `notdeft-archive-directory' under the note
 ;; file's NotDeft data directory. The archive directory is by default
 ;; named so that it gets excluded from searches.
 
+;; Instead of the above mode of operation, it is also possible to use
+;; NotDeft's search functionality without a NotDeft buffer, by
+;; invoking NotDeft's variants of the `find-file' command from any
+;; major mode. The `notdeft-lucky-find-file' opens the "best" search
+;; query match directly, whereas `notdeft-query-ido-find-file'
+;; presents the matches for selection in the minibuffer.
+
 ;; Getting Started
-;; ---------------
 
-;; To start using NotDeft, place it somewhere in your Emacs load-path
-;; and add the line
-
+;; To start using NotDeft, place it somewhere in your Emacs
+;; `load-path' and add the line
+;;
 ;;     (require 'notdeft-autoloads)
+;;
+;; in your `.emacs` file. Then run `M-x notdeft` to start.
+;; Alternatively, you may find it convenient to execute `M-x
+;; notdeft-open-query` to enter a search query from anywhere, which
+;; then also opens a `notdeft-mode' buffer for displaying the results.
 
-;; in your `.emacs` file.  Then run `M-x notdeft` to start.  It is useful
-;; to create a global keybinding for the `notdeft` function (e.g., a
-;; function key) to start it quickly.
+;; To actually use NotDeft's search engine to get search results, you
+;; must first compile the `notdeft-xapian` program, which is
+;; responsible for accessing the search index(es). The variable
+;; `notdeft-xapian-program' must specify the location of the compiled
+;; executable in order for NotDeft to use it.
+
+;; You should preferably also have the `notdeft-note-mode' minor mode
+;; enabled for all of your note file buffers, in order to get NotDeft
+;; to automatically update the search index according to changes made,
+;; no matter how the buffers were opened. The minor mode is best
+;; enabled for the relevant file formats and directories only, which
+;; can be arranged by enabling it only when a certain directory-local
+;; variable has been set to indicate note-containing directories. For
+;; example, the `add-dir-local-variable' command can be used to set
+;; such variables for the relevant modes and directories, and the
+;; minor mode can then be enabled based on their values:
+;;
+;;     (defvar-local notdeft-note-mode-auto-enable nil)
+;;
+;;     (add-hook
+;;      'hack-local-variables-hook
+;;      (lambda ()
+;;        (when notdeft-note-mode-auto-enable
+;;          (notdeft-note-mode 1))))
 
 ;; One useful way to use NotDeft is to keep a directory of notes in a
 ;; synchronized folder.  This can be used with other applications and
@@ -127,10 +163,9 @@
 ;; on OS X, Elements on iOS, or Epistle on Android.
 
 ;; Customization
-;; -------------
 
 ;; Customize the `notdeft` group to change the functionality.
-
+;;
 ;;     (customize-group "notdeft")
 
 ;; By default, NotDeft looks for notes by searching for files with the
@@ -138,40 +173,49 @@
 ;; both the file extension and the NotDeft note search path by running
 ;; `M-x customize-group` and typing `notdeft`.  Alternatively, you can
 ;; configure them in your `.emacs` file:
-
+;;
 ;;     (setq notdeft-directories '("~/.deft/" "~/Dropbox/notes/"))
 ;;     (setq notdeft-extension "txt")
 ;;     (setq notdeft-secondary-extensions '("md" "scrbl"))
-
+;;
 ;; The variable `notdeft-extension' specifies the default extension
 ;; for new notes. There can be `notdeft-secondary-extensions' for
 ;; files that are also considered to be NotDeft notes.
 
 ;; While you can choose a `notdeft-extension' that is not ".org",
 ;; NotDeft is somewhat optimized to working with files in Org format.
+;; Refer to the `notdeft-org` feature for NotDeft's Org-specific
+;; commands.
 
-;; You can easily set up a global keyboard binding for NotDeft.  For
-;; example, to bind it to F8, add the following code to your `.emacs`
-;; file:
+;; To enable the `notdeft-xapian` program to be compiled from within
+;; Emacs, you may specify a suitable shell command by setting the
+;; variable `notdeft-xapian-program-compile-command-format'. After
+;; that you can use the command `notdeft-xapian-compile-program' to
+;; build the program. It even possible to instruct the compilation to
+;; happen transparently, by having your configuration include
+;;
+;;    (add-hook 'notdeft-load-hook
+;;              'notdeft-xapian-make-program-when-uncurrent)
 
+;; It can be useful to create a global keybinding for the `notdeft'
+;; function (e.g., a function key) to start it quickly. You can easily
+;; set up such a binding. For example, to bind `notdeft' to F8, add
+;; the following code to your `.emacs` file:
+;;
 ;;     (global-set-key [f8] 'notdeft)
+
+;; NotDeft also comes with a predefined `notdeft-global-map' keymap of
+;; commands, and that keymap can also be given a global keybinding to
+;; make its commands accessible quickly. Both `notdeft' and
+;; `notdeft-open-query' are included in the keymap, among other
+;; commands that may be useful outside a NotDeft buffer.
 
 ;; The faces used for highlighting various parts of the screen can
 ;; also be customized.  By default, these faces inherit their
 ;; properties from the standard font-lock faces defined by your current
 ;; color theme.
 
-;; Acknowledgments
-;; ---------------
-
-;; Thanks to Konstantinos Efstathiou for writing simplnote.el, from
-;; which I borrowed liberally, and to Zachary Schneirov for writing
-;; Notational Velocity, which I have never had the pleasure of using,
-;; but whose functionality and spirit I wanted to bring to other
-;; platforms, such as Linux, via Emacs.
-
-;; History
-;; -------
+;;; History:
 
 ;; NotDeft:
 
