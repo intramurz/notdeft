@@ -3,7 +3,7 @@
 #+KEYWORDS: website terohasu
 #+VIEW_ACTION: export_hugo_page
 #+CTIME: Wed, 23 Aug 2017 01:00:08 +0300
-#+MTIME: Tue, 05 May 2020 21:27:53 +0200
+#+MTIME: Sat, 01 Aug 2020 18:45:27 +0200
 #+PAGE_META: title = "NotDeft"
 #+PAGE_META: url = "/notdeft/"
 #+PAGE_META: aliases = ["/deft/"]

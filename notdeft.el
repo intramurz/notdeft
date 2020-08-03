@@ -1727,31 +1727,68 @@ the result into `notdeft-directory'."
 	(setq notdeft-directory (file-name-as-directory dir))
 	dir)))
 
+(defun notdeft-fail (fail)
+  "Translate FAIL into a failure function.
+If it is a function, return it as is. If it is the symbol
+`error', return a function that accepts a message and raises it
+as an error. If it is non-nil, return a function that displays
+the message argument and returns nil. Otherwise return a function
+that does nothing and returns nil. If FAIL is a function, it
+should likewise return nil, if anything."
+  (cond
+   ((functionp fail)
+    fail)
+   ((eq fail 'error)
+    (lambda (msg)
+      (error "%s" msg)))
+   (fail
+    (lambda (msg)
+      (message "%s" msg)
+      nil))
+   (t
+    (lambda (_msg) nil))))
+
 ;;;###autoload
-(defun notdeft-current-filename (&optional note-only barf)
+(defun notdeft-current-filename (&optional note-only fail)
   "Return the current NotDeft note filename.
 In a `notdeft-mode' buffer, return the currently selected file's
 name. Otherwise return the current buffer's file name, if any,
 requiring it to name a NotDeft note if NOTE-ONLY is non-nil.
-Otherwise return nil. Additionally, if the result is nil, print a
-message if BARF is non-nil."
-  (cond
-   ((notdeft-buffer-p)
-    (let ((file (widget-get (widget-at) :tag)))
-      (when (and (not file) barf)
-	(message "No NotDeft note selected"))
-      file))
-   (note-only
-    (let ((file (and (notdeft-note-buffer-p)
-		     (buffer-file-name))))
-      (when (and (not file) barf)
-	(message "Not in a NotDeft note buffer"))
-      file))
-   (t
-    (let ((file (buffer-file-name)))
-      (when (and (not file) barf)
-	(message "Not in a file buffer"))
-      file))))
+Otherwise FAIL as specified for `notdeft-fail'."
+  (let ((fail (notdeft-fail fail)))
+    (cond
+     ((notdeft-buffer-p)
+      (let ((file (widget-get (widget-at) :tag)))
+	(if (not file)
+	    (funcall fail "No NotDeft note selected")
+	  file)))
+     (note-only
+      (let ((file (and (notdeft-note-buffer-p)
+		       (buffer-file-name))))
+	(if (not file)
+	    (funcall fail "Not in a NotDeft note buffer")
+	  file)))
+     (t
+      (let ((file (buffer-file-name)))
+	(if (not file)
+	    (funcall fail "Not in a file buffer")
+	  file))))))
+
+(defun notdeft-current-title (&optional note-only fail)
+  "Return the current NotDeft note title.
+In a `notdeft-mode' buffer, return the currently selected file's
+title. Otherwise return the current buffer's title, requiring it
+to be a NotDeft note buffer if NOTE-ONLY is non-nil. If the
+current file or buffer has no title or the title is whitespace
+only, return nil. If not on a note file or buffer, FAIL as
+specified for `notdeft-fail'."
+  (if (notdeft-buffer-p)
+      (let ((file (notdeft-current-filename note-only fail)))
+	(when file
+	  (notdeft-file-title file)))
+    (if (and note-only (not (notdeft-note-buffer-p)))
+	(funcall (notdeft-fail fail) "Not in a NotDeft note buffer")
+      (car (notdeft-parse-buffer)))))
 
 (defun notdeft-select-file ()
   "Open the selected file, if any."
@@ -2581,6 +2618,23 @@ Open the file directly, without switching to any `notdeft-buffer'."
   "Return a list of files matching Xapian QUERY."
   (when notdeft-xapian-program
     (notdeft-xapian-search-all-dirs query)))
+
+;;;###autoload
+(defun notdeft-open-title-as-query (&optional rank negate)
+  "Query for the title of the current note.
+The RANK and NEGATE arguments are as for `notdeft-open-query'.
+When called interactively, any prefix arguments are also
+interpreted in the `notdeft-open-query' sense."
+  (interactive
+   (let ((prefix current-prefix-arg))
+     (list (equal prefix 1)
+	   (equal prefix '(4)))))
+  (let ((title (notdeft-current-title nil t)))
+    (when title
+      (let* ((title (downcase title))
+	     (title (replace-regexp-in-string "\"" "" title))
+	     (title (concat "\"" title "\"")))
+	(notdeft-open-query title rank negate)))))
 
 (provide 'notdeft)
 
