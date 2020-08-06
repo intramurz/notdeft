@@ -3,7 +3,7 @@
 #+KEYWORDS: website terohasu
 #+VIEW_ACTION: export_hugo_page
 #+CTIME: Wed, 23 Aug 2017 01:00:08 +0300
-#+MTIME: Sat, 01 Aug 2020 18:45:27 +0200
+#+MTIME: Thu, 06 Aug 2020 23:41:36 +0200
 #+PAGE_META: title = "NotDeft"
 #+PAGE_META: url = "/notdeft/"
 #+PAGE_META: aliases = ["/deft/"]
@@ -600,9 +600,7 @@ There is also an optional hydra for =notdeft-mode=, which can be made available 
 
 * Org Mode Integration
 
-NotDeft is somewhat specialized for managing notes in the Org format. If you do use Org mode for editing your notes, you may want to include
-: (require 'notdeft-org)
-for some Org-specific NotDeft commands.
+NotDeft is somewhat specialized for managing notes in the Org format. If you do use Org mode for editing your notes, there are some Org-specific NotDeft commands available (for autoloading) in the =notdeft-org= feature.
 
 Additionally, depending on your Org version, you may want to
 : (require 'notdeft-org8)

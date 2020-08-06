@@ -9,13 +9,12 @@
 ;; Some NotDeft-specific support for `org-mode'. For Org mode version
 ;; 8 and higher.
 
-;; You probably want to load this `notdeft-org' feature when you load
-;; Org itself.
-
 ;;; Code:
 
 (require 'org)
+(require 'notdeft)
 
+;;;###autoload
 (defun notdeft-org-open-deft-link (link)
   "Visit the NotDeft note specified by LINK.
 The argument is a non-directory filename, possibly followed by
@@ -40,6 +39,7 @@ the \"deft:\" prefix."
     (when name-lst
       (ido-completing-read "NotDeft note: " name-lst))))
 
+;;;###autoload
 (defun notdeft-org-complete-deft-link (&optional _prefix)
   "Define completion for Org \"deft:\" links.
 The optional PREFIX argument is ignored."
@@ -76,6 +76,7 @@ Like `org-store-link', store the link into `org-stored-links'."
 	(push (list link desc) org-stored-links)
 	(message "Stored: %s" (or desc link))))))
 
+;;;###autoload
 (defun notdeft-org-link-existing-note (notename &optional desc region)
   "Create a \"deft:\" link to an existing note.
 Link to a note by NOTENAME, inserting a link description if DESC
@@ -121,6 +122,7 @@ NOTENAME, pick any one of them for deriving a description."
   #'notdeft-org-link-existing-note
   "Deprecated. Use `notdeft-org-link-existing-note'.")
 
+;;;###autoload
 (defun notdeft-org-link-new-file (&optional dir notename ext data desc region)
   "Create a \"deft:\" link to a new note.
 Return the filename of the created file. The arguments DIR,
@@ -172,11 +174,13 @@ the new note."
 (eval-when-compile
   (defvar notdeft-xapian-query))
 
+;;;###autoload
 (defun notdeft-org-open-notdeft-link (query)
   "Open the NotDeft search specified by QUERY.
 This defines the opening of Org \"notdeft:\" links."
   (notdeft-open-query query))
 
+;;;###autoload
 (defun notdeft-org-store-notdeft-link ()
   "Store the current NotDeft search as an Org link.
 Use `org-store-link' to invoke this function in a `notdeft-mode'
@@ -188,6 +192,7 @@ current query."
      :type "notdeft"
      :link (concat "notdeft:" notdeft-xapian-query))))
 
+;;;###autoload
 (defun notdeft-org-open-heading-as-query (&optional rank negate)
   "Query for current Org heading text.
 The RANK and NEGATE arguments are as for `notdeft-open-query'.
@@ -203,10 +208,7 @@ interpreted in the `notdeft-open-query' sense."
       (when title
 	(let ((title (notdeft-chomp title)))
 	  (unless (string-equal title "")
-	    (let* ((title (downcase title))
-		   (title (replace-regexp-in-string "\"" "" title))
-		   (title (concat "\"" title "\"")))
-	      (notdeft-open-query title rank negate))))))))
+	    (notdeft-open-phrase-as-query title rank negate)))))))
 
 (provide 'notdeft-org)
 

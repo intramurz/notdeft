@@ -8,12 +8,13 @@
 ;;; Commentary:
 ;; Support for "deft:" and "notdeft:" links for `org-mode' version 8.
 ;; The `org-add-link-type' API is obsolete since Org version 9.
+;;
+;; Suggested use:
+;;  (eval-after-load 'org (lambda () (require 'notdeft-org8)))
 
 ;;; Code:
 
-(require 'notdeft-org)
-
-(declare-function notdeft-org-complete-deft-link "notdeft-org")
+(require 'org)
 
 (org-add-link-type
  "deft"

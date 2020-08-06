@@ -753,7 +753,6 @@ predicate to hold, nor does the containing NotDeft directory."
     (insert-file-contents file)
     (buffer-string)))
 
-;;;###autoload
 (defun notdeft-title-from-file-content (file)
   "Extract a title from FILE content.
 Return nil on failure."
@@ -762,7 +761,6 @@ Return nil on failure."
 	   (title (notdeft-parse-title contents)))
       title)))
 
-;;;###autoload
 (defun notdeft-chomp (str)
   "Trim leading and trailing whitespace from STR."
   (replace-regexp-in-string
@@ -800,7 +798,6 @@ found."
 	   (setq result abs-file)))))
      result)))
 
-;;;###autoload
 (defun notdeft-file-by-basename (name)
   "Resolve a NotDeft note NAME to a full pathname.
 NAME is a non-directory filename, with extension. Resolve it to
@@ -869,7 +866,6 @@ Return the files' absolute paths if FULL is true."
       (notdeft-glob--absolute dir)
     (notdeft-glob dir)))
 
-;;;###autoload
 (defun notdeft-make-basename-list ()
   "Return the names of all NotDeft notes.
 Search all existing `notdeft-directories', and include all
@@ -1748,7 +1744,6 @@ should likewise return nil, if anything."
    (t
     (lambda (_msg) nil))))
 
-;;;###autoload
 (defun notdeft-current-filename (&optional note-only fail)
   "Return the current NotDeft note filename.
 In a `notdeft-mode' buffer, return the currently selected file's
@@ -2464,7 +2459,6 @@ That is, functionally move that element to position 0."
 	 (rst (- len n)))
     (cons (nth n lst) (append (butlast lst rst) (last lst (- rst 1))))))
 
-;;;###autoload
 (defun notdeft-read-extension (&optional prefer)
   "Read a NotDeft filename extension, interactively.
 The default choice is `notdeft-extension', but any of the
@@ -2505,7 +2499,6 @@ The PROMPT, CONFIRM, and PRESERVE arguments are as for
     (ido-completing-read (or prompt "Data directory: ")
 			 dirs nil t))))
 
-;;;###autoload
 (defun notdeft-select-directory (&optional prompt confirm preserve)
   "Select a NotDeft directory, possibly interactively.
 If DIRS is non-nil, select from among those directories;
@@ -2527,7 +2520,6 @@ Query for a directory with `notdeft-select-directory'."
     (setq notdeft-directory (file-name-as-directory dir))
     (message "Data directory set to %S" notdeft-directory)))
 
-;;;###autoload
 (defun notdeft-open-file-by-basename (filename)
   "Open a NotDeft file named FILENAME.
 FILENAME is a non-directory filename, with an extension \(it is
@@ -2619,6 +2611,14 @@ Open the file directly, without switching to any `notdeft-buffer'."
   (when notdeft-xapian-program
     (notdeft-xapian-search-all-dirs query)))
 
+(defun notdeft-open-phrase-as-query (str &optional rank negate)
+  "Query for STR as a phrase.
+The RANK and NEGATE arguments are as for `notdeft-open-query'."
+  (let* ((str (downcase str))
+	 (str (replace-regexp-in-string "\"" "" str))
+	 (str (concat "\"" str "\"")))
+    (notdeft-open-query str rank negate)))
+
 ;;;###autoload
 (defun notdeft-open-title-as-query (&optional rank negate)
   "Query for the title of the current note.
@@ -2631,10 +2631,7 @@ interpreted in the `notdeft-open-query' sense."
 	   (equal prefix '(4)))))
   (let ((title (notdeft-current-title nil t)))
     (when title
-      (let* ((title (downcase title))
-	     (title (replace-regexp-in-string "\"" "" title))
-	     (title (concat "\"" title "\"")))
-	(notdeft-open-query title rank negate)))))
+      (notdeft-open-phrase-as-query title rank negate))))
 
 (provide 'notdeft)
 

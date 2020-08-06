@@ -51,11 +51,9 @@ Add it for all `notdeft-directories'."
     (let ((default-directory dir))
       (add-dir-local-variable nil 'notdeft-note-mode-auto-enable t))))
 
-;; Extras for Org mode.
+;; Org mode "deft:" and "notdeft:" link support.
 (eval-after-load 'org
   (lambda ()
-    (require 'notdeft-org)
-    ;; Org "deft:" and "notdeft:" link support.
     (let ((ver (ignore-errors
 		 (car (version-to-list org-version)))))
       (require (if (and ver (< ver 9))

@@ -9,10 +9,13 @@
 ;; Support for "deft:" and "notdeft:" links for `org-mode' version 9.
 ;; The `org-link-set-parameters' API is available since Org version 9,
 ;; in the `org' feature.
+;;
+;; Suggested use:
+;;  (eval-after-load 'org (lambda () (require 'notdeft-org9)))
 
 ;;; Code:
 
-(require 'notdeft-org)
+(require 'org)
 
 (org-link-set-parameters
  "deft"
