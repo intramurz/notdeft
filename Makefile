@@ -12,7 +12,7 @@ exe :
 	$(MAKE) -C xapian
 
 clean :
-	-rm notdeft-autoloads.el *.elc
+	-rm notdeft-autoloads.el *.elc extras/*.elc
 
 PKGVER := $(shell date +%Y%m%d.%H%M)
 PKGNAMEVER := notdeft-$(PKGVER)

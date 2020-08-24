@@ -13,14 +13,15 @@
 ;; difference here is that the commands are mostly chainable.
 ;;
 ;; To set the hydra up for use, you may:
-;;  (autoload 'notdeft-mode-hydra/body "notdeft-mode-hydra")
+;;  (autoload 'notdeft-mode-hydra/body "notdeft-mode-hydra" nil t)
 ;;  (eval-after-load "notdeft"
 ;;   '(define-key notdeft-mode-map (kbd "C-c h") 'notdeft-mode-hydra/body))
 
 ;;; Code:
 
 (require 'hydra)
-(require 'notdeft-global-hydra)
+
+(autoload 'notdeft-global-hydra/body "notdeft-global-hydra" nil t)
 
 ;; Mode-private functions without autoloads.
 (declare-function notdeft-filter "notdeft")

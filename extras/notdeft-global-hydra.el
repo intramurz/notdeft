@@ -23,6 +23,8 @@
 
 (require 'hydra)
 
+(autoload 'notdeft-mode-hydra/body "notdeft-mode-hydra" nil t)
+
 ;; Functions without autoloads.
 (declare-function notdeft-buffer-p "notdeft")
 
