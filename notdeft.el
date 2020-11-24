@@ -293,6 +293,24 @@ Returns nil if no name can be derived from the argument."
   :type 'function
   :group 'notdeft)
 
+(defcustom notdeft-new-file-data-function 'notdeft-new-file-data
+  "Function for computing a new note's name and content.
+Will be called for all new notes, but not ones that are renamed
+or moved. Must return the note data as a (file-name .
+content-data) pair, where the data part can be nil for an empty
+note. The function must accept the parameters (DIR NOTENAME EXT
+DATA TITLE). DIR is a non-nil directory path for the name.
+NOTENAME may be nil if one has not been given for the new note.
+EXT is a non-nil file name extension for the note. Note content
+text DATA may be given for the new note, possibly for further
+manipulation, but will be nil for an empty note. TITLE may be nil
+if one has not been provided. Uniqueness of the constructed file
+name should be ensured if desired, as otherwise note creation
+will fail due to a naming conflict. See `notdeft-new-file-data'
+for an example implementation."
+  :type 'function
+  :group 'notdeft)
+
 (defcustom notdeft-archive-directory "_archive"
   "Sub-directory name for archived notes.
 Should begin with '.', '_', or '#' to be excluded from
@@ -633,39 +651,59 @@ Return that string, or nil if no usable name can be derived."
   "Format time TM suitably for filenames."
   (format-time-string "%Y-%m-%d-%H-%M-%S" tm t)) ; UTC
 
-(defun notdeft-generate-notename (&optional fmt)
+(defun notdeft-generate-notename ()
   "Generate a notename, and return it.
 The generated name is not guaranteed to be unique. Format with
-the format string FMT, or \"Deft--%s\" otherwise."
+the format string \"Deft--%s\", whose placeholder is filled in
+with a current time string, as formatted with
+`notdeft-format-time-for-filename'. This is the NotDeft detault
+naming for notes that are created without a title."
   (let* ((ctime (current-time))
 	 (ctime-s (notdeft-format-time-for-filename ctime))
-	 (base-filename (format (or fmt "Deft--%s") ctime-s)))
+	 (base-filename (format "Deft--%s" ctime-s)))
     base-filename))
-
-(defun notdeft-generate-filename (&optional ext dir fmt)
-  "Generate a new unique filename.
-Do so without being given any information about note title or
-content. Have the file have the extension EXT, and be in
-directory DIR \(their defaults are as for `notdeft-make-filename').
-Pass FMT to `notdeft-generate-notename'."
-  (let (filename)
-    (while (or (not filename)
-	       (file-exists-p filename))
-      (let ((base-filename (notdeft-generate-notename fmt)))
-	(setq filename (notdeft-make-filename base-filename ext dir))))
-    filename))
 
 (defun notdeft-make-filename (notename &optional ext dir in-subdir)
   "Derive a filename from NotDeft note name NOTENAME.
-The filename shall have the extension EXT,
-defaulting to `notdeft-extension'.
-The file shall reside in the directory DIR (or a default directory
-computed by `notdeft-get-directory'), except that IN-SUBDIR indicates
-that the file should be given its own subdirectory."
+The filename shall have the extension EXT, defaulting to
+`notdeft-extension'. The file shall reside in the directory
+DIR (or a default directory computed by `notdeft-get-directory'),
+except that IN-SUBDIR indicates that the file should be given its
+own subdirectory."
   (let ((root (or dir (notdeft-get-directory))))
     (concat (file-name-as-directory root)
 	    (if in-subdir (file-name-as-directory notename) "")
 	    notename "." (or ext notdeft-extension))))
+
+(defun notdeft-generate-filename (&optional ext dir)
+  "Generate a new unique filename.
+Do so without being given any information about note title or
+content. Have the file have the extension EXT, and be in
+directory DIR \(their defaults are as for
+`notdeft-make-filename')."
+  (let (filename)
+    (while (or (not filename)
+	       (file-exists-p filename))
+      (let ((base-filename (notdeft-generate-notename)))
+	(setq filename (notdeft-make-filename base-filename ext dir))))
+    filename))
+
+(defun notdeft-new-file-data (dir notename ext data title)
+  "Generate a file name and data for a new note.
+Use the directory path DIR, a note basename NOTENAME, and file
+name extension EXT to construct a complete file name. Use DATA as
+the note content, or just the TITLE if there is no other content.
+Use NOTENAME as specified, or derive it from any TITLE with
+`notdeft-title-to-notename'. Without either NOTENAME or TITLE,
+use the current date and time to derive a name for a note,
+attempting to construct a unique name."
+  (let* ((notename (or notename
+		       (when title
+			 (notdeft-title-to-notename title))))
+	 (file (if notename
+		   (notdeft-make-filename notename ext dir)
+		 (notdeft-generate-filename ext dir))))
+    (cons file (or data title))))
 
 (defun notdeft-make-file-re ()
   "Return a regexp matching strings with a NotDeft extension."
@@ -1566,18 +1604,18 @@ Called interactively, query for the FILE using the minibuffer."
     (notdeft-note-mode 1)))
 
 ;;;###autoload
-(defun notdeft-create-file (&optional dir notename ext data)
+(defun notdeft-create-file (&optional dir notename ext data title)
   "Create a new NotDeft note file.
 Create it into the directory DIR with basename NOTENAME and
 filename extension EXT, and write any DATA into the file. If any
 of those values are nil, then use a default value. If DIR or EXT
 is the symbol `ask', then query the user for a directory or
 extension. If DIR is a non-empty list, then offer the user that
-choice list of directories. If NOTENAME is of the form (format
-FMT), then use `notdeft-generate-filename' to generate a filename
-with the format string FMT. If NOTENAME is of the form (title
-STR), then use `notdeft-title-to-notename' to generate a notename
-from STR. Return the filename of the created file."
+choice list of directories. If NOTENAME is of the form (title
+STR), then use STR as the note title. Alternatively and
+preferably any TITLE may be specified as its own argument. Use
+`notdeft-new-file-data-function' to derive a note file name and
+content for the note. Return the filename of the created file."
   (let* ((dir (pcase dir
 	       ((pred stringp)
 		dir)
@@ -1594,32 +1632,34 @@ from STR. Return the filename of the created file."
 		(notdeft-read-extension))
 	       (_
 		notdeft-extension)))
-	 (file (pcase notename
-		((pred stringp)
-		 (notdeft-make-filename notename ext dir))
-		(`(title ,(and (pred stringp) title
-			       (let (and (pred stringp) name)
-				 (notdeft-title-to-notename title))))
-		 (ignore title)
-		 (notdeft-make-filename name ext dir))
-		(`(format ,(and (pred stringp) fmt))
-		 (notdeft-generate-filename ext dir fmt))
-		(_
-		 (notdeft-generate-filename ext dir)))))
-    (notdeft-ensure-root file)
-    (if (not data)
-	(notdeft-find-file file)
-      (write-region data nil file nil nil nil 'excl)
-      (notdeft-changed--fs 'files (list file))
-      (notdeft-find-file file)
-      (with-current-buffer (get-file-buffer file)
-	(goto-char (point-max))))
-    file))
+	 (title (or title
+		    (pcase notename
+		      (`(title ,(and (pred stringp) str))
+		       str)
+		      (_ nil))))
+	 (notename (when (stringp notename)
+		     notename)))
+    (pcase (funcall notdeft-new-file-data-function
+		    dir notename ext data title)
+      (`(,(and (pred stringp) file) .
+	 ,(and (pred string-or-null-p) data))
+       (notdeft-ensure-root file)
+       (if (not data)
+	   (notdeft-find-file file)
+	 (write-region data nil file nil nil nil 'excl)
+	 (notdeft-changed--fs 'files (list file))
+	 (notdeft-find-file file)
+	 (with-current-buffer (get-file-buffer file)
+	   (goto-char (point-max))))
+       file))))
 
-(defun notdeft-sub-new-file (&optional data notename pfx)
-  "Create a new file containing the string DATA.
+(defun notdeft-sub-new-file (&optional notename data title pfx)
+  "Create a new note file as specified.
 Save into a file with the specified NOTENAME
 \(if NOTENAME is nil, generate a name).
+Save DATA as the note content.
+Use the specified note TITLE,
+possibly affecting note naming or content.
 With a PFX >= '(4), query for a target directory;
 otherwise default to the result of `notdeft-get-directory'.
 With a PFX >= '(16), query for a filename extension;
@@ -1630,36 +1670,40 @@ Return the name of the new file."
       (and (>= pfx 4) 'ask)
       notename
       (and (>= pfx 16) 'ask)
-      data)))
+      data
+      title)))
 
 ;;;###autoload
 (defun notdeft-switch-to-file-named (title &optional data)
   "Switch to a NotDeft note with the specified TITLE.
 Derive a note name from the title with
 `notdeft-title-to-notename', or fail that cannot be done. If no
-note of the derived named exists, create one. Initialize any
-created file with DATA, or TITLE if not given. Return the full
-file name of the file."
+note of the derived name and default `notdeft-extension' exists,
+create one. Initialize any newly created file with DATA, possibly
+as modified by `notdeft-new-file-data-function'. Return the full
+file name of the file, whether created or existing. (Note that
+unless `notdeft-new-file-data-function' derives its filenames in
+terms of `notdeft-title-to-notename', then this command may not
+behave in a useful way.)"
   (let ((notename (notdeft-title-to-notename title)))
     (unless notename
       (error "Aborting, unsuitable title: %S" title))
-    (let* ((basename (concat notename "." notdeft-extension))
+    (let* ((ext notdeft-extension)
+	   (basename (concat notename "." ext))
 	   (file (notdeft-file-by-basename basename)))
       (if (not file)
-	  (notdeft-sub-new-file (or data title) notename)
+	  (notdeft-create-file nil notename ext data title)
 	(notdeft-find-file file)
 	file))))
 
 ;;;###autoload
-(defun notdeft-new-file-named (pfx title &optional data)
+(defun notdeft-new-file-named (pfx title)
   "Create a new file, prompting for a title.
 The prefix argument PFX is as for `notdeft-new-file'.
 Query for a TITLE when invoked as a command.
-Initialize the file with DATA, or TITLE if not given.
 Return the filename of the created file."
   (interactive "P\nsNew title: ")
-  (let ((notename (notdeft-title-to-notename title)))
-    (notdeft-sub-new-file (or data title) notename pfx)))
+  (notdeft-sub-new-file nil nil title pfx))
 
 ;;;###autoload
 (defun notdeft-new-file (pfx)
@@ -1672,12 +1716,7 @@ With two prefix arguments, also offer a choice of filename
 extensions when `notdeft-secondary-extensions' is non-empty.
 Return the filename of the created file."
   (interactive "P")
-  (let ((data (and notdeft-filter-string
-		   (concat notdeft-filter-string "\n\n")))
-	(notename
-	 (and notdeft-filter-string
-	      (notdeft-title-to-notename notdeft-filter-string))))
-    (notdeft-sub-new-file data notename pfx)))
+  (notdeft-sub-new-file nil nil notdeft-filter-string pfx))
 
 (defun notdeft-note-buffer-p (&optional buffer)
   "Whether BUFFER is a NotDeft Note mode buffer.

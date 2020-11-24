@@ -232,6 +232,8 @@ The default setting is to use the =notdeft-default-title-to-notename= function t
 
 The default implementation is suitable for titles with ASCII letters, and you probably want to pick a different implementation if your titles do not tend to use the English alphabet.
 
+Where necessary, the configuration option =notdeft-new-file-data-function= provides even more control over the naming (and content) of new notes. Such a function could, for example, add some metadata to every new note's file name and/or content.
+
 ** Configuring the Xapian Backend
 
 To have NotDeft use the =notdeft-xapian= program you've built, you will have to specify its full path in the =notdeft-xapian-program= variable. You could use =M-x customize-variable= to set it, or simply
