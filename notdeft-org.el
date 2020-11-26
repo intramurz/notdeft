@@ -99,10 +99,7 @@ NOTENAME, pick any one of them for deriving a description."
 		      (list (region-beginning) (region-end))))
 	    (desc (and region (= pfx 1)
 		       (apply #'buffer-substring-no-properties region)))
-	    (name-lst (notdeft-make-basename-list))
-	    (name (when name-lst
-		    (ido-completing-read "NotDeft note: " name-lst)))
-	    (file (and name (notdeft-file-by-basename name)))
+	    (file (funcall notdeft-select-note-file-function))
 	    (desc
 	     (unless (= pfx 4)
 	       (notdeft-org-read-link-description
@@ -112,7 +109,7 @@ NOTENAME, pick any one of them for deriving a description."
 			(1 (notdeft-chomp-nullify
 			    (funcall notdeft-describe-link file)))
 			(16 (notdeft-title-from-file-content file)))))))))
-       (list name desc region))))
+       (list (file-name-nondirectory file) desc region))))
   (when notename
     (when region
       (apply #'delete-region region))
