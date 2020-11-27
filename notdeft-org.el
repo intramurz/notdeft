@@ -99,7 +99,10 @@ NOTENAME, pick any one of them for deriving a description."
 		      (list (region-beginning) (region-end))))
 	    (desc (and region (= pfx 1)
 		       (apply #'buffer-substring-no-properties region)))
-	    (file (funcall notdeft-select-note-file-function))
+	    (file
+	     ;; Select note before prompting for any description.
+	     ;; Provide any region text as a selection hint.
+	     (notdeft-select-note-file desc))
 	    (desc
 	     (unless (= pfx 4)
 	       (notdeft-org-read-link-description
@@ -108,8 +111,10 @@ NOTENAME, pick any one of them for deriving a description."
 		      (pcase pfx
 			(1 (notdeft-chomp-nullify
 			    (funcall notdeft-describe-link file)))
-			(16 (notdeft-title-from-file-content file)))))))))
-       (list (file-name-nondirectory file) desc region))))
+			(16 (notdeft-title-from-file-content file))))))))
+	    (notename (when file
+			(file-name-nondirectory file))))
+       (list notename desc region))))
   (when notename
     (when region
       (apply #'delete-region region))

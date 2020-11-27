@@ -66,14 +66,21 @@ Using such queries is costly on performance."
   "Xapian query string history.
 Not cleared between invocations of `notdeft-mode'.")
 
-(defun notdeft-xapian-read-query ()
+(defun notdeft-xapian-read-query (&optional initial)
   "Read a Xapian query string, interactively.
 Use and update `notdeft-xapian-query-history' in querying.
-Return the read string, or nil if no query is given."
-  (let ((s (read-from-minibuffer
+Optionally fill in the specified INITIAL input. Return the read
+string, or nil if no query is given."
+  (let* ((hist (if (not initial)
+		   'notdeft-xapian-query-history
+		 (setq notdeft-xapian-query-history
+		       (cons initial
+			     notdeft-xapian-query-history))
+		 '(notdeft-xapian-query-history . 1)))
+	 (s (read-from-minibuffer
 	    "Query: " ;; PROMPT
-	    nil nil nil ;; INITIAL-CONTENTS KEYMAP READ
-	    'notdeft-xapian-query-history ;; HIST
+	    initial nil nil ;; INITIAL-CONTENTS KEYMAP READ
+	    hist ;; HIST
 	    nil ;; DEFAULT-VALUE
 	    t ;; INHERIT-INPUT-METHOD
 	    )))

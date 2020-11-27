@@ -311,11 +311,21 @@ for an example implementation."
   :type 'function
   :group 'notdeft)
 
-(defcustom notdeft-select-note-file-function 'notdeft-ido-select-note-file
+(defcustom notdeft-select-note-file-by-search nil
+  "Whether to do a search when selecting a note file.
+Ignored if `notdeft-select-note-file-function' is non-nil, in
+which case that function defines how selection is done."
+  :type 'boolean
+  :safe #'booleanp
+  :group 'notdeft)
+
+(defcustom notdeft-select-note-file-function nil
   "Function for selecting a note file.
 Used generally when another operation needs a note file to be
-selected, probably interactively. The function is called without
-arguments."
+selected, probably interactively. The function is called with a
+single alist argument specifying any selection options. The set
+of supported options is open ended, and undefined except for the
+options recognized by `notdeft-search-select-note-file'."
   :type 'function
   :group 'notdeft)
 
@@ -2615,10 +2625,10 @@ If non-nil, use the specified PROMPT."
 	    (ido-completing-read (or prompt "File: ") choices nil t))))
       file)))
 
-(defun notdeft-ido-select-note-file ()
+(defun notdeft-ido-select-note-file (&optional _options)
   "Offer an Ido choice list of all notes.
 Return a file name for the selected note. Return nil if there are
-no notes from which to select."
+no notes from which to select. Ignore the selection OPTIONS."
   (let* ((name-lst (notdeft-make-basename-list))
 	 (name (when name-lst
 		 (ido-completing-read "NotDeft note: " name-lst)))
@@ -2626,23 +2636,38 @@ no notes from which to select."
 		 (notdeft-file-by-basename name))))
     file))
 
-(defun notdeft-search-select-note-file (&optional query by-time)
-  "Search for a file matching QUERY.
-If QUERY is nil, then read a search query interactively,
-accounting for `notdeft-xapian-query-history'. If there is more
-than one match, present a choice list of non-directory filenames
-with `ido-completing-read'. Order the choices by relevance, or
-BY-TIME if requested. Return the file name of the chosen file, or
-nil if nothing was found."
+(defun notdeft-search-select-note-file (&optional options)
+  "Search for a file matching a query.
+The recognized selection OPTIONS (in an alist) are named by the
+symbol `query' or the symbol `by-time'. If QUERY is nil, then
+read a search query interactively, accounting for
+`notdeft-xapian-query-history'. If there is more than one match,
+present a choice list of non-directory filenames with
+`ido-completing-read'. Order the choices by relevance, or BY-TIME
+if requested. Return the file name of the chosen file, or nil if
+nothing was found."
   (when notdeft-xapian-program
-    (let ((query (or query (notdeft-xapian-read-query))))
+    (let* ((query (cdr (assq 'query options)))
+	   (query (notdeft-xapian-read-query query)))
       (when query
-	(let* ((notdeft-xapian-order-by-time by-time)
+	(let* ((by-time (cdr (assq 'by-time options)))
+	       (notdeft-xapian-order-by-time by-time)
 	       (files (notdeft-xapian-search-all-dirs query)))
 	  (when files
 	    (if (null (cdr files))
 		(car files)
 	      (notdeft-ido-select-file-nondirectory files))))))))
+
+(defun notdeft-select-note-file (&optional query by-time)
+  "Let the user choose a note file.
+Return the file name of the chosen note, or nil. The QUERY and
+BY-TIME arguments may or may not be honored, depending on the
+method of selection."
+  (funcall (or notdeft-select-note-file-function
+	       (if notdeft-select-note-file-by-search
+		   #'notdeft-search-select-note-file
+		 #'notdeft-ido-select-note-file))
+	   `((query . ,query) (by-time . ,by-time))))
 
 ;;;###autoload
 (defun notdeft-query-ido-find-file (&optional query by-time)
@@ -2654,10 +2679,14 @@ with `ido-completing-read'. Order the choices by relevance, or
 BY-TIME if requested."
   (interactive (list (notdeft-xapian-read-query) current-prefix-arg))
   (when notdeft-xapian-program
-    (let ((file (notdeft-search-select-note-file query by-time)))
-      (if (not file)
+    (let* ((notdeft-xapian-order-by-time by-time)
+	   (files (notdeft-xapian-search-all-dirs query)))
+      (if (null files)
 	  (message "No matching notes found")
-	(notdeft-find-file file)))))
+	(notdeft-find-file
+	 (if (null (cdr files))
+	     (car files)
+	   (notdeft-ido-select-file-nondirectory files)))))))
 
 ;;;###autoload
 (defun notdeft-lucky-find-file (&optional query)
