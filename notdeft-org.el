@@ -1,6 +1,6 @@
 ;;; notdeft-org.el --- some support for Org format NotDeft notes  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2017-2019 by the author.
+;; Copyright (C) 2017-2020 by the author.
 ;; All rights reserved.
 ;; Author: Tero Hasu <tero@hasu.is>
 ;; See "notdeft.el" for licensing information.
@@ -40,9 +40,10 @@ the \"deft:\" prefix."
       (ido-completing-read "NotDeft note: " name-lst))))
 
 ;;;###autoload
-(defun notdeft-org-complete-deft-link (&optional _prefix)
+(defun notdeft-org-complete-deft-link (&optional prefix)
   "Define completion for Org \"deft:\" links.
 The optional PREFIX argument is ignored."
+  (ignore prefix)
   (let ((name (notdeft-org-read-deft-link-name)))
     (concat "deft:" (or name ""))))
 
@@ -102,7 +103,9 @@ NOTENAME, pick any one of them for deriving a description."
 	    (file
 	     ;; Select note before prompting for any description.
 	     ;; Provide any region text as a selection hint.
-	     (notdeft-select-note-file desc))
+	     (let ((notdeft-select-note-file-query desc)
+		   (notdeft-xapian-order-by-time nil))
+	       (notdeft-select-note-file)))
 	    (desc
 	     (unless (= pfx 4)
 	       (notdeft-org-read-link-description

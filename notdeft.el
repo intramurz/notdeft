@@ -259,7 +259,8 @@ Each named directory may or may not exist."
 (defcustom notdeft-directory nil
   "Default or previously selected NotDeft data directory.
 One of the `notdeft-directories', or nil if none. The value may
-be modified locally for each NotDeft mode buffer."
+be modified locally for each NotDeft mode buffer. The global
+default is customizable."
   :type '(choice (string :tag "Default directory")
 		 (const :tag "None" nil))
   :safe #'string-or-null-p
@@ -293,40 +294,12 @@ Returns nil if no name can be derived from the argument."
   :type 'function
   :group 'notdeft)
 
-(defcustom notdeft-new-file-data-function 'notdeft-new-file-data
-  "Function for computing a new note's name and content.
-Will be called for all new notes, but not ones that are renamed
-or moved. Must return the note data as a (file-name .
-content-data) pair, where the data part can be nil for an empty
-note. The function must accept the parameters (DIR NOTENAME EXT
-DATA TITLE). DIR is a non-nil directory path for the name.
-NOTENAME may be nil if one has not been given for the new note.
-EXT is a non-nil file name extension for the note. Note content
-text DATA may be given for the new note, possibly for further
-manipulation, but will be nil for an empty note. TITLE may be nil
-if one has not been provided. Uniqueness of the constructed file
-name should be ensured if desired, as otherwise note creation
-will fail due to a naming conflict. See `notdeft-new-file-data'
-for an example implementation."
-  :type 'function
-  :group 'notdeft)
-
 (defcustom notdeft-select-note-file-by-search nil
   "Whether to do a search when selecting a note file.
 Ignored if `notdeft-select-note-file-function' is non-nil, in
 which case that function defines how selection is done."
   :type 'boolean
   :safe #'booleanp
-  :group 'notdeft)
-
-(defcustom notdeft-select-note-file-function nil
-  "Function for selecting a note file.
-Used generally when another operation needs a note file to be
-selected, probably interactively. The function is called with a
-single alist argument specifying any selection options. The set
-of supported options is open ended, and undefined except for the
-options recognized by `notdeft-search-select-note-file'."
-  :type 'function
   :group 'notdeft)
 
 (defcustom notdeft-archive-directory "_archive"
@@ -415,6 +388,36 @@ created NotDeft buffer."
   "Text used to separate file titles and summaries.")
 
 ;; Global variables
+
+(defvar notdeft-new-file-data-function 'notdeft-new-file-data
+  "Function for computing a new note's name and content.
+Will be called for all new notes, but not ones that are renamed
+or moved. Must return the note data as a (file-name .
+content-data) pair, where the data part can be nil for an empty
+note. The function must accept the parameters (DIR NOTENAME EXT
+DATA TITLE). DIR is a non-nil directory path for the name.
+NOTENAME may be nil if one has not been given for the new note.
+EXT is a non-nil file name extension for the note. Note content
+text DATA may be given for the new note, possibly for further
+manipulation, but will be nil for an empty note. TITLE may be nil
+if one has not been provided. Uniqueness of the constructed file
+name should be ensured if desired, as otherwise note creation
+will fail due to a naming conflict. See `notdeft-new-file-data'
+for an example implementation.")
+
+(defvar notdeft-select-note-file-query nil
+  "A note file selection option.
+Some implementations of `notdeft-select-note-file-function' may
+check the value of this variable. If it is non-nil it should be a
+search query string.")
+
+(defvar notdeft-select-note-file-function nil
+  "Function for selecting a note file.
+Used generally when another operation needs a note file to be
+selected, probably interactively. The function is called without
+arguments. For example implementations, see
+`notdeft-ido-select-note-file' and
+`notdeft-search-select-note-file'.")
 
 (defvar notdeft-load-hook nil
   "Hook run immediately after `notdeft' feature load.")
@@ -2625,10 +2628,10 @@ If non-nil, use the specified PROMPT."
 	    (ido-completing-read (or prompt "File: ") choices nil t))))
       file)))
 
-(defun notdeft-ido-select-note-file (&optional _options)
+(defun notdeft-ido-select-note-file ()
   "Offer an Ido choice list of all notes.
 Return a file name for the selected note. Return nil if there are
-no notes from which to select. Ignore the selection OPTIONS."
+no notes from which to select."
   (let* ((name-lst (notdeft-make-basename-list))
 	 (name (when name-lst
 		 (ido-completing-read "NotDeft note: " name-lst)))
@@ -2636,38 +2639,34 @@ no notes from which to select. Ignore the selection OPTIONS."
 		 (notdeft-file-by-basename name))))
     file))
 
-(defun notdeft-search-select-note-file (&optional options)
+(defun notdeft-search-select-note-file ()
   "Search for a file matching a query.
-The recognized selection OPTIONS (in an alist) are named by the
-symbol `query' or the symbol `by-time'. If QUERY is nil, then
-read a search query interactively, accounting for
+The recognized selection option is
+`notdeft-select-note-file-query'. If the query is nil, then read
+a search query interactively, accounting for
 `notdeft-xapian-query-history'. If there is more than one match,
 present a choice list of non-directory filenames with
-`ido-completing-read'. Order the choices by relevance, or BY-TIME
-if requested. Return the file name of the chosen file, or nil if
-nothing was found."
+`ido-completing-read'. Return the file name of the chosen file,
+or nil if nothing was found."
   (when notdeft-xapian-program
-    (let* ((query (cdr (assq 'query options)))
-	   (query (notdeft-xapian-read-query query)))
+    (let ((query (notdeft-xapian-read-query
+		  notdeft-select-note-file-query)))
       (when query
-	(let* ((by-time (cdr (assq 'by-time options)))
-	       (notdeft-xapian-order-by-time by-time)
-	       (files (notdeft-xapian-search-all-dirs query)))
+	(let ((files (notdeft-xapian-search-all-dirs query)))
 	  (when files
 	    (if (null (cdr files))
 		(car files)
 	      (notdeft-ido-select-file-nondirectory files))))))))
 
-(defun notdeft-select-note-file (&optional query by-time)
+(defun notdeft-select-note-file ()
   "Let the user choose a note file.
-Return the file name of the chosen note, or nil. The QUERY and
-BY-TIME arguments may or may not be honored, depending on the
-method of selection."
+Return the file name of the chosen note, or nil. Some selection
+options may or may not be honored, depending on the method of
+selection."
   (funcall (or notdeft-select-note-file-function
 	       (if notdeft-select-note-file-by-search
 		   #'notdeft-search-select-note-file
-		 #'notdeft-ido-select-note-file))
-	   `((query . ,query) (by-time . ,by-time))))
+		 #'notdeft-ido-select-note-file))))
 
 ;;;###autoload
 (defun notdeft-query-ido-find-file (&optional query by-time)
