@@ -2664,7 +2664,8 @@ Return the file name of the chosen note, or nil. Some selection
 options may or may not be honored, depending on the method of
 selection."
   (funcall (or notdeft-select-note-file-function
-	       (if notdeft-select-note-file-by-search
+	       (if (and notdeft-xapian-program
+			notdeft-select-note-file-by-search)
 		   #'notdeft-search-select-note-file
 		 #'notdeft-ido-select-note-file))))
 

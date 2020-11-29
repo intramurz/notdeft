@@ -8,6 +8,11 @@
 ;;; Commentary:
 ;; Some NotDeft-specific support for `org-mode'. For Org mode version
 ;; 8 and higher.
+;;
+;; This feature requires no specific setup, as the public commands and
+;; functions of this feature are autoloadable. However, see also
+;; `notdeft-org8' and `notdeft-org9', which are optional extensions to
+;; this feature, and do require setting up for use.
 
 ;;; Code:
 
@@ -44,7 +49,9 @@ the \"deft:\" prefix."
   "Define completion for Org \"deft:\" links.
 The optional PREFIX argument is ignored."
   (ignore prefix)
-  (let ((name (notdeft-org-read-deft-link-name)))
+  (let* ((file (notdeft-select-note-file))
+	 (name (when file
+		 (file-name-nondirectory file))))
     (concat "deft:" (or name ""))))
 
 (defvar notdeft-describe-link 'notdeft-title-from-file-content
