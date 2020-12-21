@@ -458,17 +458,9 @@ Local to a NotDeft mode buffer.")
   "List of files matching current filter.
 Local to a NotDeft mode buffer.")
 
-(defvar notdeft-hash-contents (make-hash-table :test 'equal)
-  "Hash containing complete cached file contents, keyed by filename.")
-
-(defvar notdeft-hash-mtimes (make-hash-table :test 'equal)
-  "Hash containing cached file modification times, keyed by filename.")
-
-(defvar notdeft-hash-titles (make-hash-table :test 'equal)
-  "Hash containing cached file titles, keyed by filename.")
-
-(defvar notdeft-hash-summaries (make-hash-table :test 'equal)
-  "Hash containing cached file summaries, keyed by filename.")
+(defvar notdeft-hash-entries (make-hash-table :test 'equal)
+  "Hash containing file information, keyed by filename.
+Each value is of the form (MTIME CONTENT TITLE SUMMARY).")
 
 (defvar notdeft-buffer-width nil
   "Width of NotDeft buffer, as currently drawn, or nil.
@@ -1008,35 +1000,41 @@ undefined components."
 
 (defun notdeft-cache-initialize ()
   "Initialize hash tables for caching files."
-  (setq notdeft-hash-contents (make-hash-table :test 'equal))
-  (setq notdeft-hash-mtimes (make-hash-table :test 'equal))
-  (setq notdeft-hash-titles (make-hash-table :test 'equal))
-  (setq notdeft-hash-summaries (make-hash-table :test 'equal)))
+  (setq notdeft-hash-entries (make-hash-table :test 'equal)))
 
 (defun notdeft-cache-clear ()
   "Clear the cache of file information."
-  (clrhash notdeft-hash-mtimes)
-  (clrhash notdeft-hash-titles)
-  (clrhash notdeft-hash-summaries)
-  (clrhash notdeft-hash-contents))
+  (clrhash notdeft-hash-entries))
 
 (defun notdeft-cache-remove-file (file)
   "Remove FILE from the cache.
 Do nothing if FILE is not in the cache."
-  (remhash file notdeft-hash-mtimes)
-  (remhash file notdeft-hash-titles)
-  (remhash file notdeft-hash-summaries)
-  (remhash file notdeft-hash-contents))
+  (remhash file notdeft-hash-entries))
+
+(defun notdeft-cache-compact ()
+  "Remove unused information from the file cache.
+That is, remove information for files not currently in any
+`notdeft-all-files' list. Return the compacted hash table."
+  (let ((new-hash (make-hash-table :test 'equal)))
+    (notdeft-buffers-mapc
+     (lambda ()
+       (cl-dolist (file notdeft-all-files)
+	 (let ((entry (gethash file notdeft-hash-entries)))
+	   (when entry
+	     (puthash file entry new-hash))))))
+    (setq notdeft-hash-entries new-hash)))
 
 (defun notdeft-cache-gc ()
   "Remove obsolete file information from the cache.
-That is, remove information for files that no longer exist.
-Return a list of the files whose information was removed."
+That is, remove information for files that no longer exist. (This
+is unsafe to do if currently using NotDeft mode buffers to view
+search results including such files.) Return a list of the files
+whose information was removed."
   (let (lst)
     (maphash (lambda (file _v)
 	       (unless (file-exists-p file)
 		 (setq lst (cons file lst))))
-	     notdeft-hash-mtimes)
+	     notdeft-hash-entries)
     (dolist (file lst lst)
       (notdeft-cache-remove-file file))))
 
@@ -1052,10 +1050,8 @@ Return a list of the files whose information was removed."
 		  (or title "") " "
 		  (or (car (cddr res)) "") " "
 		  (or summary ""))))
-    (puthash file mtime notdeft-hash-mtimes)
-    (puthash file title notdeft-hash-titles)
-    (puthash file summary notdeft-hash-summaries)
-    (puthash file contents notdeft-hash-contents)))
+    (puthash file (list mtime contents title summary)
+	     notdeft-hash-entries)))
 
 (defun notdeft-cache-file (file)
   "Update file cache for FILE.
@@ -1081,19 +1077,23 @@ Keep any information for a non-existing file."
 
 (defun notdeft-file-contents (file)
   "Retrieve complete contents of FILE from cache."
-  (gethash file notdeft-hash-contents))
+  (let ((entry (gethash file notdeft-hash-entries)))
+    (nth 1 entry)))
 
 (defun notdeft-file-mtime (file)
   "Retrieve modified time of FILE from cache."
-  (gethash file notdeft-hash-mtimes))
+  (let ((entry (gethash file notdeft-hash-entries)))
+    (car entry)))
 
 (defun notdeft-file-title (file)
   "Retrieve title of FILE from cache."
-  (gethash file notdeft-hash-titles))
+  (let ((entry (gethash file notdeft-hash-entries)))
+    (nth 2 entry)))
 
 (defun notdeft-file-summary (file)
   "Retrieve summary of FILE from cache."
-  (gethash file notdeft-hash-summaries))
+  (let ((entry (gethash file notdeft-hash-entries)))
+    (nth 3 entry)))
 
 ;; File list display
 
@@ -1143,11 +1143,12 @@ Keep any information for a non-existing file."
 
 (defun notdeft-file-widget (file)
   "Add a line to the file browser for the given FILE."
-  (let* ((title (notdeft-file-title file))
-	 (summary (notdeft-file-summary file))
+  (let* ((entry (gethash file notdeft-hash-entries))
+	 (title (nth 2 entry))
+	 (summary (nth 3 entry))
 	 (mtime (when notdeft-time-format
 		  (format-time-string notdeft-time-format
-				      (notdeft-file-mtime file))))
+				      (car entry))))
 	 (line-width (- notdeft-buffer-width (notdeft-string-width mtime)))
 	 (path (when notdeft-file-display-function
 		 (funcall notdeft-file-display-function file line-width)))
