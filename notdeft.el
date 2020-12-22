@@ -337,6 +337,19 @@ created NotDeft buffer."
   :safe #'booleanp
   :group 'notdeft)
 
+(defcustom notdeft-cache-compaction-factor 20
+  "Indicates file cache compaction frequency.
+If nil, then no compaction takes place. If it is 0, then
+compaction happens after every query. Otherwise the value should
+be an integer specifying a limit for the cache size as a factor
+of the maximum result set size. This value is ignored if the
+Xapian backend is not in use, as in that case filtering requires
+information about all files at all times."
+  :type '(choice (integer :tag "Times maximum")
+		 (const :tag "Unlimited" nil))
+  :safe (lambda (v) (or (not v) (numberp v)))
+  :group 'notdeft)
+
 ;; Faces
 
 (defgroup notdeft-faces nil
@@ -1470,7 +1483,13 @@ REBUILD is non-nil, always rebuild the entire index."
       (funcall reindex))
     (notdeft-with-each-buffer
       (setq notdeft-pending-updates 'requery)))
-  (notdeft-buffers-mapc #'notdeft-do-pending))
+  (notdeft-buffers-mapc #'notdeft-do-pending)
+  (when (and notdeft-xapian-program notdeft-cache-compaction-factor)
+    (let ((count (hash-table-count notdeft-hash-entries)))
+      (when (> count (* notdeft-cache-compaction-factor
+			notdeft-xapian-max-results))
+	(let ((remain (hash-table-count (notdeft-cache-compact))))
+	  (message "Cache compacted: size %d -> %d" count remain))))))
 
 (defun notdeft-query-edit ()
   "Enter a Xapian query string, and make it current."
