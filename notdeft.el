@@ -117,7 +117,7 @@
 ;; NotDeft's search functionality without a NotDeft buffer, by
 ;; invoking NotDeft's variants of the `find-file' command from any
 ;; major mode. The `notdeft-lucky-find-file' opens the "best" search
-;; query match directly, whereas `notdeft-query-ido-find-file'
+;; query match directly, whereas `notdeft-query-select-find-file'
 ;; presents the matches for selection in the minibuffer.
 
 ;; Getting Started
@@ -417,6 +417,19 @@ if one has not been provided. Uniqueness of the constructed file
 name should be ensured if desired, as otherwise note creation
 will fail due to a naming conflict. See `notdeft-new-file-data'
 for an example implementation.")
+
+(defvar notdeft-completing-read-history nil
+  "History of selected NotDeft note files.
+May be used by `notdeft-completing-read-function' as the history
+variable.")
+
+(defvar notdeft-completing-read-function
+  'notdeft-ido-completing-read
+  "Function to use for note file selection.
+The function is used in the sense of `completing-read' to pick a
+file from a list. The function must take a list of file paths,
+and an optional prompt. See `notdeft-ido-completing-read' for an
+example implementation.")
 
 (defvar notdeft-select-note-file-query nil
   "A note file selection option.
@@ -2632,11 +2645,11 @@ non-nil NEGATE argument reverses that setting, as does the prefix
       (notdeft nil new)
       (notdeft-xapian-query-set query))))
 
-(defun notdeft-ido-select-file-nondirectory (files &optional prompt)
+(defun notdeft-ido-completing-read (files &optional prompt)
   "Present a choice of FILES with `ido-completing-read'.
-Only present the non-directory component of each file.
-There may be duplicates of the same non-directory name.
-If non-nil, use the specified PROMPT."
+Only present the non-directory component of each file. There may
+be duplicates of the same non-directory name. If non-nil, use the
+specified PROMPT. Return the path of the selected note file."
   (let ((choices
 	 (mapcar
 	  (lambda (file)
@@ -2666,8 +2679,8 @@ The recognized selection option is
 a search query interactively, accounting for
 `notdeft-xapian-query-history'. If there is more than one match,
 present a choice list of non-directory filenames with
-`ido-completing-read'. Return the file name of the chosen file,
-or nil if nothing was found."
+`notdeft-completing-read-function'. Return the path of the chosen
+file, or nil if nothing was found."
   (when notdeft-xapian-program
     (let ((query (notdeft-xapian-read-query
 		  notdeft-select-note-file-query)))
@@ -2676,7 +2689,7 @@ or nil if nothing was found."
 	  (when files
 	    (if (null (cdr files))
 		(car files)
-	      (notdeft-ido-select-file-nondirectory files))))))))
+	      (funcall notdeft-completing-read-function files))))))))
 
 (defun notdeft-select-note-file ()
   "Let the user choose a note file.
@@ -2690,13 +2703,13 @@ selection."
 		 #'notdeft-ido-select-note-file))))
 
 ;;;###autoload
-(defun notdeft-query-ido-find-file (&optional query by-time)
+(defun notdeft-query-select-find-file (&optional query by-time)
   "Open one of the files matching Xapian search QUERY.
 If called interactively, read a search query interactively,
 accounting for `notdeft-xapian-query-history'. If there is more
 than one match, present a choice list of non-directory filenames
-with `ido-completing-read'. Order the choices by relevance, or
-BY-TIME if requested."
+with `notdeft-completing-read-function'. Order the choices by
+relevance, or BY-TIME if requested."
   (interactive (list (notdeft-xapian-read-query) current-prefix-arg))
   (when notdeft-xapian-program
     (let* ((notdeft-xapian-order-by-time by-time)
@@ -2706,7 +2719,17 @@ BY-TIME if requested."
 	(notdeft-find-file
 	 (if (null (cdr files))
 	     (car files)
-	   (notdeft-ido-select-file-nondirectory files)))))))
+	   (funcall notdeft-completing-read-function files)))))))
+
+;;;###autoload
+(defun notdeft-query-ido-find-file (&optional query by-time)
+  "Deprecated. Use `notdeft-query-select-find-file'.
+QUERY and BY-TIME are as for that function."
+  (interactive (list (notdeft-xapian-read-query) current-prefix-arg))
+  (when notdeft-xapian-program
+    (let ((notdeft-completing-read-function
+	   'notdeft-ido-completing-read))
+      (notdeft-query-select-find-file query by-time))))
 
 ;;;###autoload
 (defun notdeft-lucky-find-file (&optional query)

@@ -50,7 +50,7 @@
   ("x r" notdeft-reindex "reindex" :exit nil)
   ;; search
   ("o" notdeft-open-query "search")
-  ("f" notdeft-query-ido-find-file "search/open")
+  ("f" notdeft-query-select-find-file "search/open")
   ("x o" notdeft-lucky-find-file "lucky search")
   ;; movement
   ("b" notdeft-switch-to-note-buffer "switch to note")

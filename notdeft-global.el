@@ -34,7 +34,7 @@
     (define-key map (kbd "C-x r") #'notdeft-reindex)
     ;; search
     (define-key map (kbd "C-o") #'notdeft-open-query)
-    (define-key map (kbd "C-f") #'notdeft-query-ido-find-file)
+    (define-key map (kbd "C-f") #'notdeft-query-select-find-file)
     (define-key map (kbd "C-x o") #'notdeft-lucky-find-file)
     ;; movement
     (define-key map (kbd "C-x b") #'notdeft-switch-to-note-buffer)
