@@ -437,6 +437,13 @@ Some implementations of `notdeft-select-note-file-function' may
 check the value of this variable. If it is non-nil it should be a
 search query string.")
 
+(defvar notdeft-select-note-file-all nil
+  "Whether to select a note from all matches.
+Setting this variable to a non-nil indicates that
+`notdeft-select-note-file-function' should preferably offer all
+the relevant notes for selection rather than just the most highly
+ranked ones.")
+
 (defvar notdeft-select-note-file-function nil
   "Function for selecting a note file.
 Used generally when another operation needs a note file to be
@@ -2672,20 +2679,25 @@ no notes from which to select."
 		 (notdeft-file-by-basename name))))
     file))
 
-(defun notdeft-search-select-note-file ()
+(defun notdeft-search-select-note-file (&optional query)
   "Search for a file matching a query.
-The recognized selection option is
-`notdeft-select-note-file-query'. If the query is nil, then read
-a search query interactively, accounting for
-`notdeft-xapian-query-history'. If there is more than one match,
-present a choice list of non-directory filenames with
+If a QUERY is provided, then use it as is. Otherwise offer
+`notdeft-select-note-file-query' for interactive editing,
+accounting for `notdeft-xapian-query-history'. If there is more
+than one match in the query search results, present a choice list
+of non-directory filenames with
 `notdeft-completing-read-function'. Return the path of the chosen
 file, or nil if nothing was found."
   (when notdeft-xapian-program
-    (let ((query (notdeft-xapian-read-query
-		  notdeft-select-note-file-query)))
+    (let ((query (or query
+		     (notdeft-xapian-read-query
+		      notdeft-select-note-file-query))))
       (when query
-	(let ((files (notdeft-xapian-search-all-dirs query)))
+	(let* ((notdeft-xapian-max-results
+		(if notdeft-select-note-file-all
+		    0
+		  notdeft-xapian-max-results))
+	       (files (notdeft-xapian-search-all-dirs query)))
 	  (when files
 	    (if (null (cdr files))
 		(car files)
@@ -2713,13 +2725,10 @@ relevance, or BY-TIME if requested."
   (interactive (list (notdeft-xapian-read-query) current-prefix-arg))
   (when notdeft-xapian-program
     (let* ((notdeft-xapian-order-by-time by-time)
-	   (files (notdeft-xapian-search-all-dirs query)))
-      (if (null files)
+	   (file (notdeft-search-select-note-file query)))
+      (if (not file)
 	  (message "No matching notes found")
-	(notdeft-find-file
-	 (if (null (cdr files))
-	     (car files)
-	   (funcall notdeft-completing-read-function files)))))))
+	(notdeft-find-file file)))))
 
 ;;;###autoload
 (defun notdeft-query-ido-find-file (&optional query by-time)
