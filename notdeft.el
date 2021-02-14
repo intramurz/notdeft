@@ -682,16 +682,17 @@ any extension. Use CACHE information for resolution."
 (defun notdeft-default-title-to-notename (str)
   "Turn a title string STR to a note name string.
 Return that string, or nil if no usable name can be derived."
-  (when (string-match "^[^a-zA-Z0-9-]+" str)
-    (setq str (replace-match "" t t str)))
-  (when (string-match "[^a-zA-Z0-9-]+$" str)
-    (setq str (replace-match "" t t str)))
-  (while (string-match "[`'“”\"]" str)
-    (setq str (replace-match "" t t str)))
-  (while (string-match "[^a-zA-Z0-9-]+" str)
-    (setq str (replace-match "-" t t str)))
-  (setq str (downcase str))
-  (and (not (string= "" str)) str))
+  (save-match-data
+    (when (string-match "^[^a-zA-Z0-9-]+" str)
+      (setq str (replace-match "" t t str)))
+    (when (string-match "[^a-zA-Z0-9-]+$" str)
+      (setq str (replace-match "" t t str)))
+    (while (string-match "[`'“”\"]" str)
+      (setq str (replace-match "" t t str)))
+    (while (string-match "[^a-zA-Z0-9-]+" str)
+      (setq str (replace-match "-" t t str)))
+    (setq str (downcase str))
+    (and (not (string= "" str)) str)))
 
 (defun notdeft-format-time-for-filename (tm)
   "Format time TM suitably for filenames."
