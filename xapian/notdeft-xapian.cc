@@ -12,13 +12,19 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+#if XAPIAN_AT_LEAST(1,3,4)
+#define WHEN_HAVE_CJK(x) (x)
+#else
+#define WHEN_HAVE_CJK(x) (0)
+#endif
+
 using namespace std;
 
 /** Serializes in a sorting friendly way, similarly to
     `Xapian::sortable_serialise`. Should be quite portable when the
     argument is coerced from `time_t`, although C does not actually
     even guarantee an integer type in that case. */
-string time_serialize(const int64_t v) {
+static string time_serialize(const int64_t v) {
   char buf[16+1];
   // format in hexadecimal, zero padded, 64/4 digits
   if (snprintf(buf, sizeof buf, "%016" PRIx64, v) != 16) {
@@ -29,7 +35,7 @@ string time_serialize(const int64_t v) {
 }
 
 /** The inverse of `time_serialize`. */
-int64_t time_deserialize(const string& s) {
+static int64_t time_deserialize(const string& s) {
   int64_t v;
   if (sscanf(s.c_str(), "%" SCNx64, &v) != 1) {
     throw Xapian::InvalidArgumentError("bad time_deserialize arg", errno);
@@ -37,13 +43,13 @@ int64_t time_deserialize(const string& s) {
   return v;
 }
 
-bool string_starts_with(const string& s, const string& pfx) {
+static bool string_starts_with(const string& s, const string& pfx) {
   return s.compare(0, pfx.length(), pfx) == 0;
 }
 
 /** Returns the length of any note header marker such as "#" or "%#"
  * or "@;#". If the string is not a header string, returns 0. */
-size_t string_header_marker_len(const string& s) {
+static size_t string_header_marker_len(const string& s) {
   const size_t len = s.length();
   if (len >= 1) {
     if (s[0] == '#')
@@ -65,7 +71,7 @@ size_t string_header_marker_len(const string& s) {
   return 0;
 }
 
-bool line_skip_marker(const string& s, size_t& pos) {
+static bool line_skip_marker(const string& s, size_t& pos) {
   const size_t len = string_header_marker_len(s);
   if (len == 0)
     return false;
@@ -76,9 +82,9 @@ bool line_skip_marker(const string& s, size_t& pos) {
 /** Whether the lowercased string 's' matches 'pfx' starting at
  * position 'pos'. If so, increment 'pos' to index the position after
  * 'pfx'. */
-bool string_lc_skip_keyword(const string& s,
-			    size_t& pos,
-			    const string& pfx) {
+static bool string_lc_skip_keyword(const string& s,
+				   size_t& pos,
+				   const string& pfx) {
   auto pfx_len = pfx.length();
   auto epos = pos + pfx_len;
   if (s.length() < epos)
@@ -91,12 +97,13 @@ bool string_lc_skip_keyword(const string& s,
   return true;
 }
 
-bool string_ends_with(const string& s, const string& sfx) {
+static bool string_ends_with(const string& s, const string& sfx) {
   const int pos = s.length() - sfx.length();
   return (pos >= 0) && (s.compare(pos, sfx.length(), sfx) == 0);
 }
 
-bool string_ends_with_one_of(const string& s, const vector<string>& sfxs) {
+static bool string_ends_with_one_of(const string& s,
+				    const vector<string>& sfxs) {
   for (const string& sfx : sfxs) {
     if (string_ends_with(s, sfx)) {
       return true;
@@ -105,27 +112,35 @@ bool string_ends_with_one_of(const string& s, const vector<string>& sfxs) {
   return false;
 }
 
-bool whitespace_p(const string& s) {
+static bool drop_substring(string& s, const string& sub) {
+  auto found = s.rfind(sub);
+  if (found == string::npos)
+    return false;
+  s.replace(found, sub.length(), "");
+  return true;
+}
+
+static bool whitespace_p(const string& s) {
   for (auto p = s.c_str(); *p; p++)
     if (!isspace(*p))
       return false;
   return true;
 }
 
-string downcase(const string& s) {
+static string downcase(const string& s) {
   string data;
   data.resize(s.length());
   std::transform(s.begin(), s.end(), data.begin(), ::tolower);
   return data;
 }
 
-bool file_directory_p(const string& file) {
+static bool file_directory_p(const string& file) {
   struct stat sb;
   return (stat(file.c_str(), &sb) == 0) && S_ISDIR(sb.st_mode);
 }
 
 /** Returns an empty list on failure. */
-vector<string> ls(const string& file) {
+static vector<string> ls(const string& file) {
   vector<string> lst;
   DIR* dir = opendir(file.c_str());
   if (dir == NULL)
@@ -143,7 +158,7 @@ vector<string> ls(const string& file) {
   return lst;
 }
 
-string file_join(const string& x, const string& y) {
+static string file_join(const string& x, const string& y) {
   if (x == ".")
     return y;
   if (string_ends_with(x, "/"))
@@ -153,7 +168,7 @@ string file_join(const string& x, const string& y) {
 
 /** Return the pathname of the parent directory of `s`, or return ""
     if `s` has no directory components, or if `s` is "/". */
-string file_directory_path(const string& s) {
+static string file_directory_path(const string& s) {
   auto found = s.find_last_of('/');
   if ((found == string::npos) || (found == 0))
     return "";
@@ -162,7 +177,7 @@ string file_directory_path(const string& s) {
 
 /** Return the non-directory component of pathname `s`, or return `s`
     itself if `s` has no directory components. */
-string file_non_directory(const string& s) {
+static string file_non_directory(const string& s) {
   auto found = s.find_last_of('/');
   if (found == string::npos)
     return s;
@@ -172,7 +187,7 @@ string file_non_directory(const string& s) {
 /** Return the non-directory component of `s`, with its last extension
     (if any) removed. A filename that is "all extension" has no
     extension. */
-string file_basename(const string& s) {
+static string file_basename(const string& s) {
   auto basename = file_non_directory(s);
   size_t found = basename.find_last_of('.');
   if ((found == 0) || (found == string::npos))
@@ -183,7 +198,7 @@ string file_basename(const string& s) {
 /** Return the last filename extension of `s`, with its leading ".",
     or return "" if `s` has no extension. A filename that is "all
     extension" has no extension. */
-string file_extension(const string& s) {
+static string file_extension(const string& s) {
   auto basename = file_non_directory(s);
   size_t found = basename.find_last_of('.');
   if ((found == 0) || (found == string::npos))
@@ -191,8 +206,8 @@ string file_extension(const string& s) {
   return string(basename.substr(found));
 }
 
-void ls_org(vector<string>& res, const string& root,
-	    const string& dir, const vector<string>& exts) {
+static void ls_org(vector<string>& res, const string& root,
+		   const string& dir, const vector<string>& exts) {
   auto absDir = file_join(root, dir);
   for (const string& file : ls(absDir)) {
     auto relFile = file_join(dir, file);
@@ -339,6 +354,9 @@ static int doIndex(vector<string> subArgs) {
     exts.push_back(".org");
 
   auto verbose = verboseArg.getValue();
+
+  string lang(langArg.getValue());
+  bool cjk = drop_substring(lang, ":cjk");
   
   vector<Op> opList;
   {
@@ -372,8 +390,12 @@ static int doIndex(vector<string> subArgs) {
   
   try {
     Xapian::TermGenerator indexer;
-    Xapian::Stem stemmer(langArg.getValue());
+    Xapian::Stem stemmer(lang);
     indexer.set_stemmer(stemmer);
+    indexer.set_stemming_strategy(Xapian::TermGenerator::STEM_SOME);
+    if (cjk)
+      indexer.set_flags
+	(WHEN_HAVE_CJK(Xapian::TermGenerator::FLAG_CJK_NGRAM));
     
     for (auto op : opList) {
       auto dir = op.dir;
@@ -604,6 +626,9 @@ static int doSearch(vector<string> subArgs) {
   bool timeSort = timeArg.getValue();
   auto verbose = verboseArg.getValue();
   
+  string lang(langArg.getValue());
+  bool cjk = drop_substring(lang, ":cjk");
+
   try {
     Xapian::Database db;
     auto dirs = dirsArg.getValue();
@@ -632,7 +657,7 @@ static int doSearch(vector<string> subArgs) {
     qp.add_prefix("ext", "E");
     qp.add_prefix("title", "S");
     qp.add_prefix("tag", "K");
-    Xapian::Stem stemmer(langArg.getValue());
+    Xapian::Stem stemmer(lang);
     Xapian::Query query;
     if (queryArg.getValue() == "") {
       query = Xapian::Query::MatchAll;
@@ -645,7 +670,8 @@ static int doSearch(vector<string> subArgs) {
 	(flag_pure_not.getValue() ?
 	 Xapian::QueryParser::FLAG_PURE_NOT : 0) |
 	(flag_boolean_any_case.getValue() ?
-	 Xapian::QueryParser::FLAG_BOOLEAN_ANY_CASE : 0);
+	 Xapian::QueryParser::FLAG_BOOLEAN_ANY_CASE : 0) |
+	WHEN_HAVE_CJK(cjk ? Xapian::QueryParser::FLAG_CJK_NGRAM : 0);
       query = qp.parse_query(queryArg.getValue(), flags);
       if (verbose)
 	cerr << "parsed query is: " << query.get_description() << endl;

@@ -29,7 +29,12 @@ No limit if 0."
   :group 'notdeft)
 
 (defcustom notdeft-xapian-language "en"
-  "Stemming language to use in Xapian indexing and searching."
+  "Stemming language to use in Xapian indexing and searching.
+See Xapian documentation for a list of supported language names
+and abbreviations. May be specified as \"none\" for no stemming.
+The language identifier may be followed by the string \":cjk\" to
+enable generation of n-grams from CJK text. The CJK option is
+ignored unless a recent enough version of Xapian is used."
   :type 'string
   :safe #'stringp
   :group 'notdeft)
@@ -124,7 +129,7 @@ RECREATE, truncate any existing index files."
 			  `("--extension" ,(concat "." ext)))
 			(cons notdeft-extension
 			      notdeft-secondary-extensions)))
-	      "--lang" ,notdeft-xapian-language
+	      "--lang" ,(or notdeft-xapian-language "none")
 	      "--input"))))
       (when (/= 0 ret)
 	(error "Index generation failed: %s (%d): %s"
@@ -159,7 +164,8 @@ non-directory filename, all descending, based on the
 		(shell-quote-argument notdeft-xapian-program) " search"
 		(if name-sort " --name-sort" "")
 		(if time-sort " --time-sort" "")
-		" --lang " (shell-quote-argument notdeft-xapian-language)
+		" --lang " (shell-quote-argument
+			    (or notdeft-xapian-language "none"))
 		(if notdeft-xapian-boolean-any-case
 		    " --boolean-any-case" "")
 		(if notdeft-xapian-pure-not
