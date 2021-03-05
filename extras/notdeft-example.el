@@ -99,3 +99,13 @@ Add it for all `notdeft-directories'."
   ;; Augment the global NotDeft keymap with a hydra also.
   (autoload 'notdeft-global-hydra/body "notdeft-global-hydra" nil t)
   (define-key my-notdeft-global-map [(h)] #'notdeft-global-hydra/body))
+
+(require 'ivy nil t)
+(when (featurep 'ivy)
+  ;; Do minibuffer note selection by search and then Ivy choice list.
+  (require 'notdeft-ivy)
+  (add-to-list 'ivy-re-builders-alist
+	       '(notdeft-ivy-completing-read . ivy--regex-ignore-order))
+  (setq notdeft-completing-read-function 'notdeft-ivy-completing-read)
+  (setq notdeft-select-note-file-by-search t)
+  (setq notdeft-select-note-file-all t))
