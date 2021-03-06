@@ -46,6 +46,7 @@ Enable when the buffer local variable
   "Add `notdeft-note-mode-auto-enable' flag.
 Add it for all `notdeft-directories'."
   (interactive)
+  (require 'notdeft) ;; for `notdeft-directories'
   (dolist (dir notdeft-directories)
     (make-directory dir t)
     (let ((default-directory dir))
