@@ -23,7 +23,7 @@ package :
 	mkdir -p download
 	-rm -r $(PKGTMPDIR)
 	mkdir -p $(PKGTMPDIR)
-	cp -ai ./ $(PKGTMPDIR)/
+	cp -ri ./ $(PKGTMPDIR)/
 	( cd $(PKGTMPDIR) && git clean -dxffq && rm -rf .git && rm .gitignore Makefile )
 	echo '(define-package "notdeft" "'$(PKGVER)'"' > $(PKGMANIFEST)
 	echo '  "Note manager and search engine")' >> $(PKGMANIFEST)

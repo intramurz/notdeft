@@ -12,10 +12,16 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#if XAPIAN_AT_LEAST(1,3,4)
-#define WHEN_HAVE_CJK(x) (x)
+#if !defined(XAPIAN_AT_LEAST)
+#define XAPIAN_AT_LEAST(x,y,z) 0
+#endif
+
+#if XAPIAN_AT_LEAST(1,3,4) || XAPIAN_AT_LEAST(1,2,2) && !XAPIAN_AT_LEAST(1,3,0)
+#define TG_CJK (Xapian::TermGenerator::FLAG_CJK_NGRAM)
+#define QP_CJK (Xapian::QueryParser::FLAG_CJK_NGRAM)
 #else
-#define WHEN_HAVE_CJK(x) (0)
+#define TG_CJK ((Xapian::TermGenerator::flags)0)
+#define QP_CJK (0)
 #endif
 
 using namespace std;
@@ -394,8 +400,7 @@ static int doIndex(vector<string> subArgs) {
     indexer.set_stemmer(stemmer);
     indexer.set_stemming_strategy(Xapian::TermGenerator::STEM_SOME);
     if (cjk)
-      indexer.set_flags
-	(WHEN_HAVE_CJK(Xapian::TermGenerator::FLAG_CJK_NGRAM));
+      indexer.set_flags(TG_CJK);
     
     for (auto op : opList) {
       auto dir = op.dir;
@@ -671,7 +676,7 @@ static int doSearch(vector<string> subArgs) {
 	 Xapian::QueryParser::FLAG_PURE_NOT : 0) |
 	(flag_boolean_any_case.getValue() ?
 	 Xapian::QueryParser::FLAG_BOOLEAN_ANY_CASE : 0) |
-	WHEN_HAVE_CJK(cjk ? Xapian::QueryParser::FLAG_CJK_NGRAM : 0);
+	(cjk ? QP_CJK : 0);
       query = qp.parse_query(queryArg.getValue(), flags);
       if (verbose)
 	cerr << "parsed query is: " << query.get_description() << endl;
