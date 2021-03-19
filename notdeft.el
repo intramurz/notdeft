@@ -2687,11 +2687,10 @@ no notes from which to select."
   "Search for a file matching a query.
 If a QUERY is provided, then use it as is. Otherwise offer
 `notdeft-select-note-file-query' for interactive editing,
-accounting for `notdeft-xapian-query-history'. If there is more
-than one match in the query search results, present a choice list
-of non-directory filenames with
-`notdeft-completing-read-function'. Return the path of the chosen
-file, or nil if nothing was found."
+accounting for `notdeft-xapian-query-history'. If there are any
+matches in the query search results, present a choice list of
+non-directory filenames with `notdeft-completing-read-function'.
+Return the path of the chosen file, or nil if nothing was found."
   (when notdeft-xapian-program
     (let ((query (or query
 		     (notdeft-xapian-read-query
@@ -2703,9 +2702,7 @@ file, or nil if nothing was found."
 		  notdeft-xapian-max-results))
 	       (files (notdeft-xapian-search-all-dirs query)))
 	  (when files
-	    (if (null (cdr files))
-		(car files)
-	      (funcall notdeft-completing-read-function files))))))))
+	    (funcall notdeft-completing-read-function files)))))))
 
 (defun notdeft-select-note-file ()
   "Let the user choose a note file.
