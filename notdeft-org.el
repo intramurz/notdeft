@@ -214,13 +214,14 @@ interpreted in the `notdeft-open-query' sense."
    (let ((prefix current-prefix-arg))
      (list (equal prefix 1)
 	   (equal prefix '(4)))))
-  (if (not (org-at-heading-p))
-      (message "Not at a heading")
-    (let ((title (nth 4 (org-heading-components))))
-      (when title
-	(let ((title (notdeft-chomp title)))
-	  (unless (string-equal title "")
-	    (notdeft-open-phrase-as-query title rank negate)))))))
+  (let ((title
+	 (save-excursion
+	   (org-back-to-heading t)
+	   (nth 4 (org-heading-components)))))
+    (when title
+      (let ((title (notdeft-chomp title)))
+	(unless (string-equal title "")
+	  (notdeft-open-phrase-as-query title rank negate))))))
 
 (provide 'notdeft-org)
 
