@@ -114,14 +114,13 @@ NOTENAME, pick any one of them for deriving a description."
 		   (notdeft-xapian-order-by-time nil))
 	       (notdeft-select-note-file)))
 	    (desc
-	     (unless (= pfx 4)
+	     (when (and file (/= pfx 4))
 	       (notdeft-org-read-link-description
 		(or desc
-		    (when file
-		      (pcase pfx
-			(1 (notdeft-chomp-nullify
-			    (funcall notdeft-describe-link file)))
-			(16 (notdeft-title-from-file-content file))))))))
+		    (pcase pfx
+		      (1 (notdeft-chomp-nullify
+			  (funcall notdeft-describe-link file)))
+		      (16 (notdeft-title-from-file-content file)))))))
 	    (notename (when file
 			(file-name-nondirectory file))))
        (list notename desc region))))
