@@ -1894,35 +1894,59 @@ specified for `notdeft-fail'."
       (notdeft-find-file old-file))))
 
 ;;;###autoload
-(defun notdeft-delete-file (prefix)
-  "Delete the selected or current NotDeft note file.
-Prompt before proceeding. With a PREFIX argument, also kill the
-deleted file's buffer, if any."
-  (interactive "P")
-  (let ((old-file (notdeft-current-filename nil t)))
+(defun notdeft-delete-file (file &optional trash kill-buffer
+			    interactively)
+  "Delete a NotDeft note FILE (or TRASH it).
+When called interactively, delete the selected or current note,
+and prompt before proceeding. With one \\[universal-argument]
+prefix also KILL-BUFFER the deleted file's buffer, if any. Unless
+two \\[universal-argument] prefixes are given, ask `delete-file'
+to TRASH the file; that should result in the file being moved to
+the system's trash can instead of being deleted, provided that
+`delete-by-moving-to-trash' is non-nil. Print messages
+accordingly when called INTERACTIVELY. Return the file name of
+any deleted file, or nil if `delete-file' was not executed."
+  (interactive
+   (let ((prefix current-prefix-arg))
+     (list (notdeft-current-filename nil t)
+	   (not (equal prefix '(16)))
+	   (equal prefix '(4))
+	   t)))
+  (let ((old-file file))
     (cond
      ((not old-file)
       nil)
      ((notdeft-file-sparse-p old-file)
-      (message "Cannot delete fixed-path file"))
+      (when interactively
+	(message "Cannot delete fixed-path file")))
      (t
-      (let ((old-file-nd
+      (let ((actually-trash
+	     (and trash delete-by-moving-to-trash))
+	    (old-file-nd
 	     (file-name-nondirectory old-file)))
-	(when (y-or-n-p
-	       (concat "Delete file " old-file-nd "? "))
-	  (when (file-exists-p old-file)
-	    
-	    ;; ~C-c C-d~: trash the file to a reycle bin (instead of deleting it outright) by adding the optional argument  "t"
-	    (delete-file old-file t))
-	  
-	  (delq old-file notdeft-current-files)
-	  (delq old-file notdeft-all-files)
-	  (notdeft-changed--fs 'files (list old-file))
-	  (when prefix
-	    (let ((buf (get-file-buffer old-file)))
-	      (when buf
-		(kill-buffer buf))))
-	  (message "Deleted %S" old-file-nd)))))))
+	(when (or (not interactively)
+		  (y-or-n-p
+		   (concat (if actually-trash "Trash" "Delete")
+			   " file " old-file-nd "? ")))
+	  (prog1
+	      (when (file-exists-p old-file)
+		;; This may result in the file being trashed rather than
+		;; deleted, and we assume that any trash can is not one of
+		;; the `notdeft-directories' (or under them), which would
+		;; be weird.
+		(delete-file old-file trash)
+		old-file)
+	    (delq old-file notdeft-current-files)
+	    (delq old-file notdeft-all-files)
+	    (notdeft-changed--fs 'files (list old-file))
+	    (when kill-buffer
+	      (let ((buf (get-file-buffer old-file)))
+		(when buf
+		  (kill-buffer buf))))
+	    (when interactively
+	      (message "%s %S"
+		       (if actually-trash "Trashed" "Deleted")
+		       old-file-nd)))))))))
 
 ;;;###autoload
 (defun notdeft-move-into-subdir (prefix)
