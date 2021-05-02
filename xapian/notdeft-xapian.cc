@@ -341,6 +341,10 @@ static int doIndex(vector<string> subArgs) {
   TCLAP::SwitchArg
     inputArg("i", "input", "read instructions from STDIN", false);
   cmdLine.add(inputArg);
+  TCLAP::SwitchArg
+    skipDrawersArg("", "allow-org-property-drawers",
+		   "allow Org :PROPERTIES: drawers in header", false);
+  cmdLine.add(skipDrawersArg);
   TCLAP::UnlabeledMultiArg<string>
     dirsArg("directory...", "index specified dirs", false, "directory");
   cmdLine.add(dirsArg);
@@ -490,6 +494,15 @@ static int doIndex(vector<string> subArgs) {
 	      while (getline(infile, line)) {
 		if (whitespace_p(line)) {
 		  // skip blank line
+		} else if (skipDrawersArg.getValue() &&
+			   string_starts_with(line, ":PROPERTIES:")) {
+		  while (getline(infile, line)) {
+		    // skip Org drawer
+		    if (string_starts_with(line, ":END:"))
+		      break;
+		    if (!string_starts_with(line, ":"))
+		      break; // unclosed drawer
+		  }
 		} else if (!line_skip_marker(line, pos)) {
 		  // non Org header mode
 		  if (!titleDone) {

@@ -328,6 +328,15 @@ have no file information displayed."
   :safe #'null
   :group 'notdeft)
 
+(defcustom notdeft-allow-org-property-drawers nil
+  "Whether to recognize Org property drawers.
+If non-nil, then buffer-level Org \"PROPERTIES\" drawers are
+treated as being part of the header of the note, which in
+practice means that they are treated the same as comments."
+  :type 'boolean
+  :safe #'booleanp
+  :group 'notdeft)
+
 (defcustom notdeft-open-query-in-new-buffer nil
   "Whether to open query results in a new buffer.
 More specifically, when this variable is non-nil, the
@@ -1004,17 +1013,34 @@ undefined components."
 	(while (and (< (point) end) (not (and title summary)))
 	  ;;(message "%S" (list (point) title summary))
 	  (cond
-	   ((looking-at "^\\(?:%\\|@;\\|<!--\\)?#\\+TITLE:[ \t]*\\(.*\\)$") ;; Org title
+	   ((looking-at "^\\(?:%\\|@;\\|<!--\\)?#\\+TITLE:[[:blank:]]*\\(.*\\)$") ;; Org title
 	    (setq dbg (cons `(TITLE . ,(match-string 1)) dbg))
 	    (setq title (match-string 1))
 	    (goto-char (match-end 0)))
-	   ((looking-at "^\\(?:%\\|@;\\|<!--\\)?#\\+\\(?:KEYWORDS\\|FILETAGS\\):[ \t]*\\(.*\\)$")
+	   ((looking-at "^\\(?:%\\|@;\\|<!--\\)?#\\+\\(?:KEYWORDS\\|FILETAGS\\):[[:blank:]]*\\(.*\\)$")
 	    (setq dbg (cons `(KEYWORDS . ,(match-string 1)) dbg))
 	    (setq keywords (match-string 1))
 	    (goto-char (match-end 0)))
 	   ((looking-at "^\\(?:%\\|@;\\|<!--\\)?#.*$") ;; line comment
 	    (setq dbg (cons `(COMMENT . ,(match-string 0)) dbg))
 	    (goto-char (match-end 0)))
+	   ((and notdeft-allow-org-property-drawers
+		 (looking-at "^:PROPERTIES:.*\\(\n\\|$\\)"))
+	    (let ((drawer-beg (point)) done)
+	      (goto-char (match-end 0))
+	      (while (and (not done) (< (point) end))
+		(cond
+		 ((looking-at "^:END:.*$")
+		  (goto-char (match-end 0))
+		  (setq done t))
+		 ((looking-at "^:.*\\(\n\\|$\\)") ;; property line
+		  (goto-char (match-end 0)))
+		 (t ;; syntax error, unclosed drawer
+		  (setq done t))))
+	      (setq dbg (cons
+			 `(DRAWER . ,(buffer-substring
+				      drawer-beg (point)))
+			 dbg))))
 	   ((looking-at "[[:graph:]].*$") ;; non-whitespace
 	    (setq dbg (cons `(REST . ,(match-string 0)) dbg))
 	    (unless title
@@ -1023,7 +1049,7 @@ undefined components."
 	    (setq summary (buffer-substring (point) end))
 	    (goto-char end))
 	   (t
-	    (let* ((b (point)) (e (+ b 1)))
+	    (let* ((b (point)) (e (1+ b)))
 	      (setq dbg (cons `(SKIP . ,(buffer-substring b e)) dbg))
 	      (goto-char e)))))))
     (list

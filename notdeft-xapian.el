@@ -94,7 +94,8 @@ string, or nil if no query is given."
 
 (eval-when-compile
   (defvar notdeft-extension)
-  (defvar notdeft-secondary-extensions))
+  (defvar notdeft-secondary-extensions)
+  (defvar notdeft-allow-org-property-drawers))
 
 (defun notdeft-xapian-index-dirs (dirs &optional recreate)
   "Create or update a Xapian index for DIRS.
@@ -122,7 +123,7 @@ RECREATE, truncate any existing index files."
 	    nil	;; DISPLAY (do not refresh)
 	    `("index"
 	      "--chdir" ,(expand-file-name "." "~")
-	      ,@(if recreate '("--recreate") nil)
+	      ,@(when recreate '("--recreate"))
 	      ,@(apply #'append
 		       (mapcar
 			(lambda (ext)
@@ -130,6 +131,8 @@ RECREATE, truncate any existing index files."
 			(cons notdeft-extension
 			      notdeft-secondary-extensions)))
 	      "--lang" ,(or notdeft-xapian-language "none")
+	      ,@(when notdeft-allow-org-property-drawers
+		  '("--allow-org-property-drawers"))
 	      "--input"))))
       (when (/= 0 ret)
 	(error "Index generation failed: %s (%d): %s"
