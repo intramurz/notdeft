@@ -1025,17 +1025,17 @@ undefined components."
 	    (setq dbg (cons `(COMMENT . ,(match-string 0)) dbg))
 	    (goto-char (match-end 0)))
 	   ((and notdeft-allow-org-property-drawers
-		 (looking-at "^:PROPERTIES:.*\\(\n\\|$\\)"))
+		 (looking-at "^[ \t]*:PROPERTIES:[ \t]*\\(\n\\|$\\)"))
 	    (let ((drawer-beg (point)) done)
 	      (goto-char (match-end 0))
 	      (while (and (not done) (< (point) end))
 		(cond
-		 ((looking-at "^:END:.*$")
+		 ((looking-at "^[ \t]*:END:.*$") ;; recognize loosely for error recovery
 		  (goto-char (match-end 0))
 		  (setq done t))
-		 ((looking-at "^:.*\\(\n\\|$\\)") ;; property line
+		 ((looking-at "^[ \t]*:\\S-+:.*\\(\n\\|$\\)") ;; property line
 		  (goto-char (match-end 0)))
-		 (t ;; syntax error, unclosed drawer
+		 (t ;; unclosed drawer
 		  (setq done t))))
 	      (setq dbg (cons
 			 `(DRAWER . ,(buffer-substring

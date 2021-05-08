@@ -133,6 +133,39 @@ static bool whitespace_p(const string& s) {
   return true;
 }
 
+static bool org_drawer_line_p(const string& s,
+			      const char* kw = nullptr,
+			      bool req_ws = false) {
+  auto p = s.c_str();
+  while (isblank(*p)) p++;
+  if (*p++ != ':') return false;
+
+  if (kw) {
+    /* Skip specified keyword, e.g., "END". */
+    auto len = strlen(kw);
+    if (strncmp(p, kw, len) != 0)
+      return false;
+    p += len;
+  } else {
+    /* Require a property name of at least one non-whitespace. */
+    if (!(*p && *p != ':' && !isspace(*p)))
+      return false;
+    p++;
+    while (*p && *p != ':' && !isspace(*p))
+      p++;
+  }
+
+  if (*p != ':') return false;
+
+  if (req_ws) {
+    while (*++p)
+      if (!isspace(*p))
+	return false;
+  }
+
+  return true;
+}
+
 static string downcase(const string& s) {
   string data;
   data.resize(s.length());
@@ -495,12 +528,12 @@ static int doIndex(vector<string> subArgs) {
 		if (whitespace_p(line)) {
 		  // skip blank line
 		} else if (skipDrawersArg.getValue() &&
-			   string_starts_with(line, ":PROPERTIES:")) {
+			   org_drawer_line_p(line, "PROPERTIES", true)) {
 		  while (getline(infile, line)) {
 		    // skip Org drawer
-		    if (string_starts_with(line, ":END:"))
+		    if (org_drawer_line_p(line, "END"))
 		      break;
-		    if (!string_starts_with(line, ":"))
+		    if (!org_drawer_line_p(line))
 		      break; // unclosed drawer
 		  }
 		} else if (!line_skip_marker(line, pos)) {
