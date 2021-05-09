@@ -3,7 +3,7 @@
 #+KEYWORDS: website terohasu
 #+VIEW_ACTION: export_hugo_page
 #+CTIME: Wed, 23 Aug 2017 01:00:08 +0300
-#+MTIME: Thu, 06 Aug 2020 23:41:36 +0200
+#+MTIME: Sun, 09 May 2021 23:13:34 +0200
 #+PAGE_META: title = "NotDeft"
 #+PAGE_META: url = "/notdeft/"
 #+PAGE_META: aliases = ["/deft/"]
@@ -617,6 +617,16 @@ The =notdeft-org= feature also defines a =notdeft-org-store-deft-link= command, 
 NotDeft allows a "deft:" link to also include a search option, which follows the filename, separated by =::=. Search options are specified in the same way as for "file:" links. For example:
 : [[deft:notdeft-homepage.org::*Note Archival]]
 : [[deft:notdeft-homepage.org::#capture-protocol]]
+
+NotDeft has some optional support for the Org [[https://orgmode.org/manual/Property-Syntax.html][property syntax]], which can be enabled by setting the variable =notdeft-allow-org-property-drawers= to a non-nil value. Enabling that option makes it so that any top-level =PROPERTIES= [[https://orgmode.org/manual/Drawers.html][drawer]] appearing at the beginning of a note is treated as a comment. The title of the note
+#+BEGIN_SRC org
+  :PROPERTIES:
+  :CUSTOM_ID: my-custom-id
+  :END:
+  Note title
+  Note body.
+#+END_SRC
+can be either ":PROPERTIES:" or "Note title", depending on whether NotDeft is configured to recognize =PROPERTIES= drawers.
 
 ** Using NotDeft and Org Mode as a Desktop Wiki Engine
 
