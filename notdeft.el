@@ -2779,11 +2779,19 @@ selection."
 (defun notdeft-query-select-find-file (&optional query by-time)
   "Open one of the files matching Xapian search QUERY.
 If called interactively, read a search query interactively,
-accounting for `notdeft-xapian-query-history'. If there is more
-than one match, present a choice list of non-directory filenames
-with `notdeft-completing-read-function'. Order the choices by
-relevance, or BY-TIME if requested."
-  (interactive (list (notdeft-xapian-read-query) current-prefix-arg))
+accounting for `notdeft-xapian-query-history' and any selected
+region. If there is more than one match, present a choice list of
+non-directory filenames with `notdeft-completing-read-function'.
+Order the choices by relevance, or BY-TIME if requested."
+  (interactive
+   (let ((by-time (equal current-prefix-arg '(4)))
+	 (no-region (equal current-prefix-arg '(16))))
+     (list
+      (notdeft-xapian-read-query
+       (when (and mark-active (not no-region))
+	 (buffer-substring-no-properties
+	  (region-beginning) (region-end))))
+      by-time)))
   (when notdeft-xapian-program
     (let* ((notdeft-xapian-order-by-time by-time)
 	   (file (notdeft-search-select-note-file query)))
@@ -2802,14 +2810,24 @@ QUERY and BY-TIME are as for that function."
       (notdeft-query-select-find-file query by-time))))
 
 ;;;###autoload
-(defun notdeft-lucky-find-file (&optional query)
+(defun notdeft-lucky-find-file (&optional query by-time)
   "Open the highest-ranked note matching a search QUERY.
-If called interactively, read a search query interactively,
-accounting for `notdeft-xapian-query-history'.
-Open the file directly, without switching to any `notdeft-buffer'."
-  (interactive (list (notdeft-xapian-read-query)))
+If BY-TIME is non-nil, then choose the most recent matching note
+instead of the highest-ranked one. If called interactively, read
+a search query interactively, accounting for
+`notdeft-xapian-query-history' and any selected region. Open the
+file directly, without switching to any `notdeft-buffer'."
+  (interactive
+   (let ((by-time (equal current-prefix-arg '(4)))
+	 (no-region (equal current-prefix-arg '(16))))
+     (list
+      (notdeft-xapian-read-query
+       (when (and mark-active (not no-region))
+	 (buffer-substring-no-properties
+	  (region-beginning) (region-end))))
+      by-time)))
   (when notdeft-xapian-program
-    (let* ((notdeft-xapian-order-by-time nil)
+    (let* ((notdeft-xapian-order-by-time by-time)
 	   (notdeft-xapian-max-results 1)
 	   (files (notdeft-xapian-search-all-dirs query)))
       (if (not files)
