@@ -53,10 +53,6 @@ static int64_t time_deserialize(const string& s) {
   return v;
 }
 
-static bool string_starts_with(const string& s, const string& pfx) {
-  return s.compare(0, pfx.length(), pfx) == 0;
-}
-
 /** Returns the length of any note header marker such as "#" or "%#"
  * or "@;#". If the string is not a header string, returns 0. */
 static size_t string_header_marker_len(const string& s) {
@@ -191,9 +187,11 @@ static vector<string> ls(const string& file) {
   struct dirent* entry;
   while ((entry = readdir(dir)) != NULL) {
     string name(entry->d_name);
-    if (!(string_starts_with(name, ".") ||
-	  string_starts_with(name, "_") ||
-	  string_starts_with(name, "#"))) {
+    if (name.length() > 0
+	&& name[0] != '.'
+	&& name[0] != '_'
+	&& name[0] != '#'
+	&& name.find('/') == string::npos) {
       lst.push_back(name);
     }
   }

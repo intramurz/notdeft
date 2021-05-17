@@ -870,6 +870,14 @@ Optionally, use function TRIM to trim any result string."
       (unless (string= "" str)
 	(if trim (funcall trim str) str)))))
 
+(defvar notdeft-directory-files-regexp "^[^._#/][^/]*$"
+  "A match regexp for `directory-files'.
+The regular expression to use as the third argument when calling
+`directory-files' to look for notes and note subdirectories from
+the file system. This should be specified to that it is
+consistent with the Xapian program's filtering of readdir
+results.")
+
 (defun notdeft-root-find-file (file-p root)
   "Find a file matching predicate FILE-P under ROOT.
 FILE-P is called with the file path name \(including the ROOT
@@ -880,7 +888,8 @@ found."
    (file-readable-p root)
    (file-directory-p root)
    (let ((root (file-name-as-directory root))
-	 (files (directory-files root nil "^[^._#]" t))
+	 (files (directory-files root nil
+				 notdeft-directory-files-regexp t))
 	 result)
      (while (and files (not result))
        (let* ((abs-file (concat root (car files))))
@@ -930,7 +939,8 @@ regexp FILE-RE, defaulting to the result of
     (and
      (file-readable-p abs-dir)
      (file-directory-p abs-dir)
-     (let* ((files (directory-files abs-dir nil "^[^._#]" t))
+     (let* ((files (directory-files abs-dir nil
+				    notdeft-directory-files-regexp t))
 	    (file-re (or file-re (notdeft-make-file-re))))
        (dolist (file files result)
 	 (let* ((rel-file (file-relative-name
