@@ -26,6 +26,10 @@
 
 using namespace std;
 
+namespace NotDeft {
+  struct ReadError {};
+}
+
 /** Serializes in a sorting friendly way, similarly to
     `Xapian::sortable_serialise`. Should be quite portable when the
     argument is coerced from `time_t`, although C does not actually
@@ -251,9 +255,11 @@ static void ls_org(vector<string>& res, const string& root,
   for (const string& file : ls(absDir)) {
     auto relFile = file_join(dir, file);
     auto absFile = file_join(absDir, file);
+    bool isDir = file_directory_p(absFile);
     if (string_ends_with_one_of(file, exts)) {
-      res.push_back(relFile);
-    } else if (file_directory_p(absFile)) {
+      if (!isDir)
+	res.push_back(relFile);
+    } else if (isDir) {
       ls_org(res, root, relFile, exts);
     }
   }
@@ -567,22 +573,33 @@ static int doIndex(vector<string> subArgs) {
 		}
 	      }
 	    }
+	    if (!infile.eof())
+	      throw NotDeft::ReadError();
 	    return doc;
 	  }; // end makeDoc
 
 	  auto addFile = [&] (const pair<string, int64_t>& x) {
 	    if (verbose)
 	      cerr << "indexing file " << x.first << endl;
-	    Xapian::Document doc = makeDoc(x);
-	    db.add_document(doc);
+	    try {
+	      Xapian::Document doc = makeDoc(x);
+	      db.add_document(doc);
+	    } catch (const NotDeft::ReadError& e) {
+	      // File not (fully) readable, so don't index.
+	    }
 	  };
 
 	  auto updateFile = [&] (const pair<string, int64_t>& x,
 				 Xapian::docid docId) {
 	    if (verbose)
 	      cerr << "re-indexing file " << x.first << endl;
-	    Xapian::Document doc = makeDoc(x);
-	    db.replace_document(docId, doc);
+	    try {
+	      Xapian::Document doc = makeDoc(x);
+	      db.replace_document(docId, doc);
+	    } catch (const NotDeft::ReadError& e) {
+	      // File no longer (fully) readable, so remove from index.
+	      db.delete_document(docId);
+	    }
 	  };
 	  
 	  auto rmFile = [&] (const pair<string, int64_t>& x) {
