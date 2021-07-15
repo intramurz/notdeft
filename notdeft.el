@@ -2840,27 +2840,37 @@ file directly, without switching to any `notdeft-buffer'."
   (when notdeft-xapian-program
     (notdeft-xapian-search-all-dirs query)))
 
-(defun notdeft-open-phrase-as-query (str &optional rank negate)
-  "Query for STR as a phrase.
-The RANK and NEGATE arguments are as for `notdeft-open-query'."
+(defun notdeft-string-as-phrase-query (str)
+  "Turn STR into a phrase query."
   (let* ((str (downcase str))
 	 (str (replace-regexp-in-string "\"" "" str))
 	 (str (concat "\"" str "\"")))
-    (notdeft-open-query str rank negate)))
+    str))
+
+(defun notdeft-open-phrase-as-query (phrase &optional rank negate)
+  "Query for PHRASE.
+Treat the phrase string as a phrase whose words must all appear
+in the specified order. The RANK and NEGATE arguments are as for
+`notdeft-open-query'."
+  (let ((phrase (notdeft-string-as-phrase-query phrase)))
+    (notdeft-open-query phrase rank negate)))
 
 ;;;###autoload
 (defun notdeft-open-title-as-query (&optional rank negate)
   "Query for the title of the current note.
-The RANK and NEGATE arguments are as for `notdeft-open-query'.
-When called interactively, any prefix arguments are also
-interpreted in the `notdeft-open-query' sense."
+The RANK and NEGATE arguments are as for `notdeft-open-query'. In
+the unranked case do a phrase search for the title. When called
+interactively, any prefix arguments are also interpreted in the
+`notdeft-open-query' sense."
   (interactive
    (let ((prefix current-prefix-arg))
      (list (equal prefix 1)
 	   (equal prefix '(4)))))
   (let ((title (notdeft-current-title nil t)))
     (when title
-      (notdeft-open-phrase-as-query title rank negate))))
+      (notdeft-open-query
+       (if rank title (notdeft-string-as-phrase-query title))
+       rank negate))))
 
 (provide 'notdeft)
 

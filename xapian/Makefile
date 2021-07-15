@@ -13,5 +13,4 @@ clean :
 	-rm $(PROGRAM)
 
 install-deps :
-	sudo aptitude install libtclap-dev libxapian-dev
-
+	sudo aptitude install pkg-config libtclap-dev libxapian-dev
