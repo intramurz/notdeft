@@ -142,7 +142,7 @@ even after any compilation attempt."
 	(let ((exe-file
 	       (ignore-errors
 		 (notdeft-xapian-make-program nil))))
-	  (when (file-executable-p exe-file)
+	  (when (and exe-file (file-executable-p exe-file))
 	    exe-file))))
 
 (provide 'notdeft-xapian-make)
