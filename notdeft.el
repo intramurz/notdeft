@@ -328,7 +328,7 @@ have no file information displayed."
   :safe #'null
   :group 'notdeft)
 
-(defcustom notdeft-allow-org-property-drawers nil
+(defcustom notdeft-allow-org-property-drawers t
   "Whether to recognize Org property drawers.
 If non-nil, then buffer-level Org \"PROPERTIES\" drawers are
 treated as being part of the header of the note, which in
