@@ -2375,19 +2375,26 @@ If STR is nil, clear the filter."
 
 (defun notdeft-filter-increment ()
   "Append character to the filter string and update state.
-In particular, update `notdeft-current-files'.
-Get the character from the variable `last-command-event'."
+In particular, update `notdeft-current-files'. Get the character
+from the variable `last-command-event', possibly as modified by
+`input-method-function', which could also produce multiple
+characters."
   (interactive)
-  (let ((char (if input-method-function
-                  (let ((buffer-read-only nil))
-                    (car (funcall input-method-function last-command-event)))
-                last-command-event
-                )))
-    (when (= char ?\S-\ )
-      (setq char ?\s))
-    (setq char (char-to-string char))
-    (setq notdeft-filter-string (concat notdeft-filter-string char))
-    (notdeft-changed--filter)))
+  (let* ((events (if input-method-function
+                     (let ((buffer-read-only nil))
+                       (funcall input-method-function last-command-event))
+                   (list last-command-event)))
+         (str (mapconcat
+               (lambda (char)
+                 (cond
+                  ((= char ?\S-\ ) " ")
+                  ((characterp char) (char-to-string char))
+                  (t "")))
+               events
+               "")))
+    (unless (string= "" str)
+      (setq notdeft-filter-string (concat notdeft-filter-string str))
+      (notdeft-changed--filter))))
 
 (defun notdeft-filter-decrement ()
   "Remove last character from the filter string and update state.
