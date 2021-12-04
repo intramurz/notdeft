@@ -2368,7 +2368,8 @@ If STR is nil, clear the filter."
 In particular, update `notdeft-current-files'.
 Get the character from the variable `last-command-event'."
   (interactive)
-  (let ((char last-command-event))
+  (let ((char (let ((buffer-read-only nil))
+                (car (funcall input-method-function last-command-event)))))
     (when (= char ?\S-\ )
       (setq char ?\s))
     (setq char (char-to-string char))
