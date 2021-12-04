@@ -771,7 +771,7 @@ attempting to construct a unique name."
 (defun notdeft-strip-extension (file)
   "Strip any NotDeft filename extension from FILE."
   (replace-regexp-in-string (notdeft-make-file-re) "" file))
-  
+
 (defun notdeft-base-filename (file)
   "Strip the leading path and NotDeft extension from filename FILE.
 Use `file-name-directory' to get the directory component.
@@ -1203,7 +1203,7 @@ Keep any information for a non-existing file."
 	   "No files found.\n"))))
 
     (widget-setup)
-    
+
     (goto-char (point-min))
     (forward-line (1- line))))
 
@@ -1596,7 +1596,7 @@ changes to its note buffers."
   (if notdeft-note-mode
       (notdeft-register-buffer)
     (notdeft-deregister-buffer)))
-  
+
 (defun notdeft-refresh-after-save ()
   "Refresh global NotDeft state after saving a NotDeft note."
   (let ((file (buffer-file-name)))
@@ -1691,7 +1691,7 @@ The list of choices is determined by the function
       (let* ((names (mapcar #'buffer-name buffers))
 	     (name (ido-completing-read "Buffer: " names nil t)))
 	(switch-to-buffer name))))))
-		     
+
 ;;;###autoload
 (defun notdeft-find-file (file)
   "Edit NotDeft note FILE.
@@ -2375,16 +2375,26 @@ If STR is nil, clear the filter."
 
 (defun notdeft-filter-increment ()
   "Append character to the filter string and update state.
-In particular, update `notdeft-current-files'.
-Get the character from the variable `last-command-event'."
+In particular, update `notdeft-current-files'. Get the character
+from the variable `last-command-event', possibly as modified by
+`input-method-function', which could also produce multiple
+characters."
   (interactive)
-  (let ((char (let ((buffer-read-only nil))
-                (car (funcall input-method-function last-command-event)))))
-    (when (= char ?\S-\ )
-      (setq char ?\s))
-    (setq char (char-to-string char))
-    (setq notdeft-filter-string (concat notdeft-filter-string char))
-    (notdeft-changed--filter)))
+  (let* ((events (if input-method-function
+                     (let ((buffer-read-only nil))
+                       (funcall input-method-function last-command-event))
+                   (list last-command-event)))
+         (str (mapconcat
+               (lambda (char)
+                 (cond
+                  ((= char ?\S-\ ) " ")
+                  ((characterp char) (char-to-string char))
+                  (t "")))
+               events
+               "")))
+    (unless (string= "" str)
+      (setq notdeft-filter-string (concat notdeft-filter-string str))
+      (notdeft-changed--filter))))
 
 (defun notdeft-filter-decrement ()
   "Remove last character from the filter string and update state.
